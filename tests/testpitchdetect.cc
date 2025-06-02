@@ -307,27 +307,32 @@ main (int argc, char **argv)
   bool ok = wav_data.load (argv[1]);
   assert (ok);
 
+  int best_window_size = 0;
+  double best_snr = 0;
   vector<double> freqs;
-  //for (int ssz = 99; ssz < 8192; ssz = int (ssz * 1.2))
-  int ssz = 515;
+  vector<vector<SineDetectPartial>> best_partials_vec;
+  for (int window_size_ms = 5; window_size_ms <= 160; window_size_ms *= 2)
     {
+      int ssz = window_size_ms * 0.001 * wav_data.mix_freq();
       if (ssz % 2 == 0)
         ssz += 1;
 
       double snr_signal_power = 0;
       double snr_delta_power = 0;
+      vector<vector<SineDetectPartial>> partials_vec;
 
       vector<float> window (ssz);
       for (size_t i = 0; i < window.size(); i++)
         {
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
-      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += 256)
+      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
       //size_t offset = 10000;
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
           //printf ("%zd\n", offset);
           auto partials = sine_detect (wav_data.mix_freq(), single_frame);
+          partials_vec.push_back (partials);
 
           for (size_t i = 0; i < single_frame.size(); i++)
             {
@@ -344,11 +349,24 @@ main (int argc, char **argv)
               //sm_printf ("%zd %.10f %.10f %.10f #%zd\n", i, signal, out, signal - out, offset / 256);
             }
           //printf ("%f Hz - %f\n", p.freq, p.mag);
-          auto [twm_freq, twm_err] = pitch_detect_twm (partials);
-          if (twm_freq > 0)
-            freqs.push_back (twm_freq);
+          //auto [twm_freq, twm_err] = pitch_detect_twm (partials);
+          //if (twm_freq > 0)
+            //freqs.push_back (twm_freq);
+        }
+      double snr = 10 * log10 (snr_signal_power / snr_delta_power);
+      if (snr > best_snr)
+        {
+          best_snr = snr;
+          best_window_size = ssz;
+          best_partials_vec = partials_vec;
         }
         sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
+    }
+  for (auto partials : best_partials_vec)
+    {
+      auto [twm_freq, twm_err] = pitch_detect_twm (partials);
+      if (twm_freq > 0)
+        freqs.push_back (twm_freq);
     }
   int best_note = 0;
   double best_err = 1e300;
