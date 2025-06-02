@@ -136,6 +136,28 @@ sine_detect (double mix_freq, const vector<float>& signal)
   return partials;
 }
 
+double
+golden_section_search (std::function<double(double)> f, double a, double b, double tolerance)
+{
+  const double invphi = (sqrt (5) - 1) / 2;
+
+  while ((b - a) > tolerance)
+    {
+      double c = b - (b - a) * invphi;
+      double d = a + (b - a) * invphi;
+
+      if (f (c) < f (d))
+        {
+          b = d;
+        }
+      else
+        {
+          a = c;
+        }
+    }
+
+  return (b + a) / 2;
+}
 
 void
 pitch_detect_twm (const vector<SineDetectPartial>& partials)
@@ -219,38 +241,29 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
   vector<double> freq_opt, err_opt;
   for (size_t i = 1; i + 2 < error_grid.size(); i++)
     {
+      /*
+       * handle two cases: normal minimum and two-value minimum
+       *
+       *   *       *                *            *
+       *     \   /                    \        /
+       *       *                        * -- *
+       *   e1  e2  e3               e1  e2  e3  e4
+       */
       const auto [e1, e2, e3, e4] = std::tie (error_grid[i - 1], error_grid[i], error_grid[i + 1],  error_grid[i + 2]);
       if ((e1 > e2 && e2 < e3) || (e1 > e2 && e2 == e3 && e3 < e4))
         {
           sm_printf ("found local minimum: %f error %f\n", freq_grid[i], error_grid[i]);
-          double step = sqrt (scan_grid_factor);
-          double e = error_grid[i];
-          double freq = freq_grid[i];
-          for (int j = 0; j < 10; j++)
-            {
-              double f1 = freq / step;
-              double f2 = freq * step;
-              double e1 = get_error (f1);
-              double e2 = get_error (f2);
-              bool reduce_step = true;
-              if (e1 < e)
-                {
-                  freq = f1;
-                  e = e1;
-                  reduce_step = false;
-                }
-              if (e2 < e)
-                {
-                  freq = f2;
-                  e = e2;
-                  reduce_step = false;
-                }
-              sm_printf ("step=%f freq=%f err=%f\n", step, freq, e);
-              if (reduce_step)
-                step = sqrt (step);
-            }
-          freq_opt.push_back (freq);
-          err_opt.push_back (e);
+          double tolerance = freq_grid[i] * 0.0001; /* a lot better than 1 cent resolution */
+          double f;
+
+          if (e2 == e3)
+            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 2], tolerance);
+          else
+            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 1], tolerance);
+
+          freq_opt.push_back (f);
+          err_opt.push_back (get_error (f));
+          sm_printf ("optimized: %f %f\n", freq_opt.back(), err_opt.back());
         }
     }
   double best_err_opt = 1e9;
