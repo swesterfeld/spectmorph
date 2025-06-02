@@ -141,18 +141,28 @@ golden_section_search (std::function<double(double)> f, double a, double b, doub
 {
   const double invphi = (sqrt (5) - 1) / 2;
 
+  double c = b - (b - a) * invphi;
+  double d = a + (b - a) * invphi;
+  double fc = f (c);
+  double fd = f (d);
+
   while ((b - a) > tolerance)
     {
-      double c = b - (b - a) * invphi;
-      double d = a + (b - a) * invphi;
-
-      if (f (c) < f (d))
+      if (fc < fd)
         {
           b = d;
+          d = c;
+          fd = fc;
+          c = b - (b - a) * invphi;
+          fc = f (c);
         }
       else
         {
           a = c;
+          c = d;
+          fc = fd;
+          d = a + (b - a) * invphi;
+          fd = f (d);
         }
     }
 
@@ -257,9 +267,9 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
           double f;
 
           if (e2 == e3)
-            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 2], tolerance);
+            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 2], tolerance); // two value minimum
           else
-            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 1], tolerance);
+            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 1], tolerance); // normal minimum
 
           freq_opt.push_back (f);
           err_opt.push_back (get_error (f));
