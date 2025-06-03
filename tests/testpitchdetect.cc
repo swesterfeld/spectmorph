@@ -177,12 +177,14 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
 
   size_t N = 10;
   double A_max = 0;
+  double f_max = 0;
   double min_error = 1e9;
   double best_freq = 0;
   vector<double> freqs, mags, fc;
   for (auto p : partials)
     {
       A_max = std::max (A_max, p.mag);
+      f_max = std::max (f_max, p.freq);
       sm_printf ("%f %f #P\n", p.freq, p.mag);
       freqs.push_back (p.freq);
       mags.push_back (p.mag);
@@ -206,18 +208,17 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
 
       double error_p2m = 0;
 
-      for (int n = 1; n <= N; n++)
+      const int n_p2m_freqs = std::max<int> (lrint (f_max / freq), 1);
+      size_t best_index = 0;
+      for (int n = 1; n <= n_p2m_freqs; n++)
         {
           float f_harm = n * freq;
-          size_t best_index = 0;
-          double best_diff = 1000000;
-          for (size_t i = 0; i < partials.size(); i++)
+          double best_diff = std::abs (partials[best_index].freq - f_harm);
+          double new_best_diff;
+          while (best_index + 1 < partials.size() && (new_best_diff = std::abs (partials[best_index + 1].freq - f_harm)) < best_diff)
             {
-              if (std::abs (partials[i].freq - f_harm) < best_diff)
-                {
-                  best_diff = std::abs (partials[i].freq - f_harm);
-                  best_index = i;
-                }
+              best_diff = new_best_diff;
+              best_index++;
             }
           error_p2m += best_diff * pow (f_harm, -p)
                     + partials[best_index].mag / A_max * (q * best_diff * pow (f_harm, -p) - r);
@@ -231,7 +232,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
           error_m2p += freq_distance * pow (partials[n].freq, -p)
                     + partials[n].mag / A_max * (q * freq_distance * pow (partials[n].freq, -p) - r);
         }
-      double error = error_p2m / N + error_m2p * rho / N;
+      double error = error_p2m / n_p2m_freqs + error_m2p * rho / N;
       //sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
       if (error < min_error)
         {
