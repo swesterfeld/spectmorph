@@ -361,11 +361,16 @@ main (int argc, char **argv)
         }
         sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
     }
+  vector<double> mag_sums;
   for (auto partials : best_partials_vec)
     {
       double A_max = 0;
+      double A_sum = 0;
       for (auto p : partials)
-        A_max = std::max (p.mag, A_max);
+        {
+          A_max = std::max (p.mag, A_max);
+          A_sum += p.mag;
+        }
 
       vector<SineDetectPartial> strong_partials;
       for (auto p : partials)
@@ -374,7 +379,10 @@ main (int argc, char **argv)
 
       auto [twm_freq, twm_err] = pitch_detect_twm (strong_partials);
       if (twm_freq > 0)
-        freqs.push_back (twm_freq);
+        {
+          freqs.push_back (twm_freq);
+          mag_sums.push_back (A_sum);
+        }
     }
   int best_note = 0;
   double best_err = 1e300;
@@ -383,9 +391,9 @@ main (int argc, char **argv)
       double freq = note_to_freq (note);
       double ferr = 0;
 
-      for (auto f : freqs)
+      for (size_t i = 0; i < freqs.size(); i++)
         {
-          ferr += std::abs (freq - f);
+          ferr += std::abs (freqs[i] - freq) * mag_sums[i];
         }
       if (ferr < best_err)
         {
