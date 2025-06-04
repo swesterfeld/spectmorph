@@ -175,7 +175,6 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
   if (partials.size() == 0)
     return std::make_pair (-1.0, -1.0);
 
-  size_t N = 10;
   double A_max = 0;
   double f_max = 0;
   double min_error = 1e9;
@@ -208,7 +207,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
 
       double error_p2m = 0;
 
-      const int n_p2m_freqs = std::max<int> (lrint (f_max / freq), 1);
+      const int n_p2m_freqs = std::max<int> (lrint (f_max / freq), 1); // ceil ?
       size_t best_index = 0;
       for (int n = 1; n <= n_p2m_freqs; n++)
         {
@@ -225,14 +224,15 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         }
       double error_m2p = 0;
 
-      for (int n = 0; n < std::min<int> (partials.size(), 10); n++)
+      const int n_m2p_freqs = std::min<int> (partials.size(), 10);
+      for (int n = 0; n < n_m2p_freqs; n++)
         {
           double n_harmonic = std::max (round (partials[n].freq / freq), 1.0);
           double freq_distance = std::abs (partials[n].freq - n_harmonic * freq);
           error_m2p += freq_distance * pow (partials[n].freq, -p)
                     + partials[n].mag / A_max * (q * freq_distance * pow (partials[n].freq, -p) - r);
         }
-      double error = error_p2m / n_p2m_freqs + error_m2p * rho / N;
+      double error = error_p2m / n_p2m_freqs + error_m2p * rho / n_m2p_freqs;
       //sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
       if (error < min_error)
         {
@@ -308,7 +308,6 @@ main (int argc, char **argv)
   bool ok = wav_data.load (argv[1]);
   assert (ok);
 
-  int best_window_size = 0;
   double best_snr = 0;
   vector<double> freqs;
   vector<vector<SineDetectPartial>> best_partials_vec;
@@ -358,14 +357,22 @@ main (int argc, char **argv)
       if (snr > best_snr)
         {
           best_snr = snr;
-          best_window_size = ssz;
           best_partials_vec = partials_vec;
         }
         sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
     }
   for (auto partials : best_partials_vec)
     {
-      auto [twm_freq, twm_err] = pitch_detect_twm (partials);
+      double A_max = 0;
+      for (auto p : partials)
+        A_max = std::max (p.mag, A_max);
+
+      vector<SineDetectPartial> strong_partials;
+      for (auto p : partials)
+        if (p.mag / A_max > 0.01)
+          strong_partials.push_back (p);
+
+      auto [twm_freq, twm_err] = pitch_detect_twm (strong_partials);
       if (twm_freq > 0)
         freqs.push_back (twm_freq);
     }
