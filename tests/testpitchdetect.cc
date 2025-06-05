@@ -224,7 +224,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         }
       double error_m2p = 0;
 
-      const int n_m2p_freqs = std::min<int> (partials.size(), 10);
+      const int n_m2p_freqs = partials.size();
       for (int n = 0; n < n_m2p_freqs; n++)
         {
           double n_harmonic = std::max (round (partials[n].freq / freq), 1.0);
