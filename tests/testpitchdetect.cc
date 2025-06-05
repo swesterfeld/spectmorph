@@ -242,7 +242,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
       return error;
     };
   const double scan_grid_factor = 1.05;
-  for (float freq = 10; freq < 4000; freq *= scan_grid_factor)
+  for (float freq = 10; freq < 5000; freq *= scan_grid_factor)
     {
       freq_grid.push_back (freq);
       error_grid.push_back (get_error (freq));
