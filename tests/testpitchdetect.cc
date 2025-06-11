@@ -241,7 +241,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         }
       return error;
     };
-  const double scan_grid_factor = 1.05;
+  const double scan_grid_factor = 1.01;
   for (float freq = 10; freq < 5000; freq *= scan_grid_factor)
     {
       freq_grid.push_back (freq);
@@ -292,7 +292,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
 }
 
 static double
-note_to_freq (int note)
+note_to_freq (double note)
 {
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
@@ -384,22 +384,35 @@ main (int argc, char **argv)
           mag_sums.push_back (A_sum);
         }
     }
-  int best_note = 0;
-  double best_err = 1e300;
-  for (int note = 0; note < 128; note++)
-    {
-      double freq = note_to_freq (note);
-      double ferr = 0;
 
-      for (size_t i = 0; i < freqs.size(); i++)
+  auto get_best_note = [&] (double note_min, double note_max)
+    {
+      double note_freq_min = note_to_freq (note_min);
+      double note_freq_max = note_to_freq (note_max);
+
+      double best_note = 0;
+      double best_err = 1e300;
+      for (double note = 0; note < 128; note += 0.01)
         {
-          ferr += std::abs (freqs[i] - freq) * mag_sums[i];
+          double freq = note_to_freq (note);
+          double ferr = 0;
+
+          for (size_t i = 0; i < freqs.size(); i++)
+            {
+              if (freqs[i] >= note_freq_min && freqs[i] <= note_freq_max)
+                ferr += std::abs (freqs[i] - freq) * mag_sums[i];
+            }
+          if (ferr < best_err)
+            {
+              best_err = ferr;
+              best_note = note;
+            }
         }
-      if (ferr < best_err)
-        {
-          best_err = ferr;
-          best_note = note;
-        }
-    }
-  sm_printf ("%d\n", best_note);
+      return best_note;
+    };
+
+  double best_note_estimate = get_best_note (0, 128);
+  sm_printf ("%.2f\n", best_note_estimate);
+
+  sm_printf ("%.2f\n", get_best_note (best_note_estimate - 2, best_note_estimate + 2));
 }
