@@ -44,6 +44,16 @@ public:
   }
 };
 
+// wraps phase in range [0:2*pi]
+static double
+normalize_phase (double phase)
+{
+  const double inv_2pi = 1.0 / (2.0 * M_PI);
+  phase *= inv_2pi;
+  phase -= floor (phase);
+  return phase * (2.0 * M_PI);
+}
+
 }
 
 vector<SineDetectPartial>
@@ -125,7 +135,7 @@ sine_detect (double mix_freq, const vector<float>& signal)
               double phase = atan2 (im_mag, re_mag) + 0.5 * M_PI;
               // correct for the odd-centered analysis
               phase -= (signal.size() - 1) / 2.0 / mix_freq * partial.freq * 2 * M_PI;
-              partial.phase = phase;
+              partial.phase = normalize_phase (phase);
 
               partials.push_back (partial);
               // printf ("%f %f %f\n", (x + x_max) * mix_freq / padded_length, peak_mag * (2 / window_weight), normalized_peak_width);
@@ -334,24 +344,28 @@ main (int argc, char **argv)
           auto partials = sine_detect (wav_data.mix_freq(), single_frame);
           partials_vec.push_back (partials);
 
+          vector<float> out_frame (single_frame.size());
+          for (size_t p = 0; p < partials.size(); p++)
+            {
+              VectorSinParams params;
+
+              params.mix_freq = wav_data.mix_freq();
+              params.freq     = partials[p].freq;
+              params.phase    = partials[p].phase;
+              params.mag      = partials[p].mag;
+              params.mode     = VectorSinParams::ADD;
+
+              fast_vector_sin (params, out_frame.begin(), out_frame.end());
+            }
           for (size_t i = 0; i < single_frame.size(); i++)
             {
-              double out = 0;
-              for (size_t p = 0; p < partials.size(); p++)
-                {
-                  out += sin (i * partials[p].freq * 2 * M_PI / wav_data.mix_freq() + partials[p].phase) * partials[p].mag;
-                }
+              double out = out_frame[i] * window[i];
               double signal = single_frame[i] * window[i];
-              out *= window[i];
               double delta = out - signal;
-              snr_signal_power += single_frame[i] * single_frame[i];
+              snr_signal_power += signal * signal;
               snr_delta_power += delta * delta;
               //sm_printf ("%zd %.10f %.10f %.10f #%zd\n", i, signal, out, signal - out, offset / 256);
             }
-          //printf ("%f Hz - %f\n", p.freq, p.mag);
-          //auto [twm_freq, twm_err] = pitch_detect_twm (partials);
-          //if (twm_freq > 0)
-            //freqs.push_back (twm_freq);
         }
       double snr = 10 * log10 (snr_signal_power / snr_delta_power);
       if (snr > best_snr)
@@ -359,7 +373,7 @@ main (int argc, char **argv)
           best_snr = snr;
           best_partials_vec = partials_vec;
         }
-        sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
+      sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
     }
   vector<double> mag_sums;
   for (auto partials : best_partials_vec)
