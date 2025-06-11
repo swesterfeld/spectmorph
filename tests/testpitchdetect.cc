@@ -221,7 +221,7 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
       size_t best_index = 0;
       for (int n = 1; n <= n_p2m_freqs; n++)
         {
-          float f_harm = n * freq;
+          double f_harm = n * freq;
           double best_diff = std::abs (partials[best_index].freq - f_harm);
           double new_best_diff;
           while (best_index + 1 < partials.size() && (new_best_diff = std::abs (partials[best_index + 1].freq - f_harm)) < best_diff)
@@ -229,8 +229,9 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
               best_diff = new_best_diff;
               best_index++;
             }
-          error_p2m += best_diff * pow (f_harm, -p)
-                    + partials[best_index].mag / A_max * (q * best_diff * pow (f_harm, -p) - r);
+          double diff_f_pow = best_diff * pow (f_harm, -p);
+
+          error_p2m += diff_f_pow + partials[best_index].mag / A_max * (q * diff_f_pow - r);
         }
       double error_m2p = 0;
 
@@ -239,8 +240,9 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         {
           double n_harmonic = std::max (round (partials[n].freq / freq), 1.0);
           double freq_distance = std::abs (partials[n].freq - n_harmonic * freq);
-          error_m2p += freq_distance * pow (partials[n].freq, -p)
-                    + partials[n].mag / A_max * (q * freq_distance * pow (partials[n].freq, -p) - r);
+          double diff_f_pow = freq_distance * pow (partials[n].freq, -p);
+
+          error_m2p += diff_f_pow + partials[n].mag / A_max * (q * diff_f_pow - r);
         }
       double error = error_p2m / n_p2m_freqs + error_m2p * rho / n_m2p_freqs;
       //sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
@@ -337,7 +339,6 @@ main (int argc, char **argv)
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
       for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
-      //size_t offset = 10000;
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
           //printf ("%zd\n", offset);
