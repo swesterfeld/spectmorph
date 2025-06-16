@@ -84,15 +84,17 @@ sine_detect (double mix_freq, const vector<float>& signal)
   padded_signal.resize (padded_length);
 
   /* create odd/centered windowed input signal */
-  vector<float> odd_centered (padded_length);
-  for (size_t i = 0; i < padded_signal.size(); i++)
-    odd_centered[i] = padded_signal[(i + signal.size() / 2) % odd_centered.size()];
+  const auto fft_size = padded_length;
 
-  vector<float> fft_values (odd_centered.size());
-  FFT::fftar_float (odd_centered.size(), odd_centered.data(), fft_values.data());
+  float *odd_centered = FFT::new_array_float (fft_size);
+  for (size_t i = 0; i < padded_signal.size(); i++)
+    odd_centered[i] = padded_signal[(i + signal.size() / 2) % fft_size];
+
+  float *fft_values = FFT::new_array_float (fft_size);
+  FFT::fftar_float (fft_size, odd_centered, fft_values);
 
   vector<float> mag_values;
-  for (size_t i = 0; i < fft_values.size(); i += 2)
+  for (size_t i = 0; i < fft_size; i += 2)
     mag_values.push_back (sqrt (fft_values[i] * fft_values[i] + fft_values[i + 1] * fft_values[i + 1]));
 
   for (size_t x = 1; x + 2 < mag_values.size(); x++)
@@ -142,6 +144,8 @@ sine_detect (double mix_freq, const vector<float>& signal)
             }
         }
     }
+  FFT::free_array_float (odd_centered);
+  FFT::free_array_float (fft_values);
 
   return partials;
 }
