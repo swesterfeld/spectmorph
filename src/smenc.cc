@@ -10,6 +10,7 @@
 #include "smdebug.hh"
 #include "smutils.hh"
 #include "smfft.hh"
+#include "smpitchdetect.hh"
 
 #include "config.h"
 
@@ -72,6 +73,9 @@ struct Options
   bool          attack;
   bool          track_sines;
   float         fundamental_freq;
+  bool          fundamental_freq_detect_note = false;
+  bool          fundamental_freq_detect_freq = false;
+  int           fundamental_args = 0;
   int           optimization_level;
   double        loop_start;
   double        loop_end;
@@ -141,10 +145,22 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
 	  fundamental_freq = sm_atof (opt_arg);
+          fundamental_args++;
         }
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           fundamental_freq = freqFromNote (atoi (opt_arg));
+          fundamental_args++;
+        }
+      else if (check_arg (argc, argv, &i, "-M"))
+        {
+          fundamental_freq_detect_note = true;
+          fundamental_args++;
+        }
+      else if (check_arg (argc, argv, &i, "-F"))
+        {
+          fundamental_freq_detect_freq = true;
+          fundamental_args++;
         }
       else if (check_arg (argc, argv, &i, "-O0"))
         {
@@ -240,6 +256,8 @@ Options::print_usage ()
   sm_printf (" --version                   print version\n");
   sm_printf (" -f <freq>                   specify fundamental frequency in Hz\n");
   sm_printf (" -m <note>                   specify midi note for fundamental frequency\n");
+  sm_printf (" -F                          automatically detect fundamental frequency\n");
+  sm_printf (" -M                          automatically detect midi note\n");
   sm_printf (" -O <level>                  set optimization level\n");
   sm_printf (" -s                          produced stripped models\n");
   sm_printf (" --no-attack                 skip attack time optimization\n");
@@ -368,9 +386,15 @@ main (int argc, char **argv)
         }
     }
 
-  if (options.fundamental_freq < 1)
+  if (options.fundamental_args > 1)
+    {
+      fprintf (stderr, "%s: only one of -m, -f, -M or -F can be used\n", options.program_name.c_str());
+      exit (1);
+    }
+  if (options.fundamental_freq < 1 && !options.fundamental_freq_detect_note && !options.fundamental_freq_detect_freq)
     {
       fprintf (stderr, "%s: fundamental frequency is required (can be set using -m or -f)\n", options.program_name.c_str());
+      fprintf (stderr, "Use -M option to detect midi note automatically, -F to detect frequency.\n");
       exit (1);
     }
 
@@ -393,6 +417,20 @@ main (int argc, char **argv)
           exit (1);
         }
     }
+  if (options.fundamental_freq_detect_note)
+    {
+      double note = detect_pitch (wav_data);
+      int round_note = lrint (note);
+      options.fundamental_freq = freqFromNote (round_note);
+      sm_printf ("Detected midi note %.2f, rounded to %d, fundamental frequency %.2f.\n", note, round_note, options.fundamental_freq);
+    }
+  if (options.fundamental_freq_detect_freq)
+    {
+      double note = detect_pitch (wav_data);
+      options.fundamental_freq = freqFromNote (note);
+      sm_printf ("Detected midi note %.2f, fundamental frequency %.2f.\n", note, options.fundamental_freq);
+    }
+
   /* use defaults, but customize window */
   enc_params.setup_params (wav_data, options.fundamental_freq);
 
