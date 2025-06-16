@@ -365,14 +365,14 @@ main (int argc, char **argv)
         }
     }
 
-  auto get_best_note = [&] (double note_min, double note_max)
+  auto get_best_note = [&] (double note_min, double note_max, double step)
     {
       double note_freq_min = note_to_freq (note_min);
       double note_freq_max = note_to_freq (note_max);
 
       double best_note = 0;
       double best_err = 1e300;
-      for (double note = 0; note < 128; note += 0.01)
+      for (double note = note_min; note < note_max; note += step)
         {
           double freq = note_to_freq (note);
           double ferr = 0;
@@ -391,8 +391,8 @@ main (int argc, char **argv)
       return best_note;
     };
 
-  double best_note_estimate = get_best_note (0, 128);
+  double best_note_estimate = get_best_note (0, 128, 0.1);
   sm_printf ("%.2f\n", best_note_estimate);
 
-  sm_printf ("%.2f\n", get_best_note (best_note_estimate - 2, best_note_estimate + 2));
+  sm_printf ("%.2f\n", get_best_note (best_note_estimate - 2, best_note_estimate + 2, 0.01));
 }
