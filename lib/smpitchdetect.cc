@@ -157,9 +157,6 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
 
   double A_max = 0;
   double f_max = 0;
-  double min_error = 1e9;
-  double best_freq = 0;
-  vector<double> freqs, mags, fc;
   double best_partial_f = 0;
   for (auto p : partials)
     {
@@ -167,12 +164,8 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         best_partial_f = p.freq;
       A_max = std::max (A_max, p.mag);
       f_max = std::max (f_max, p.freq);
-      freqs.push_back (p.freq);
-      mags.push_back (p.mag);
     }
 
-  vector<double> error_grid;
-  vector<double> freq_grid;
   auto get_error = [&] (double freq)
     {
       const double p = 0.5;
@@ -210,11 +203,6 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
           error_m2p += diff_f_pow + partials[n].mag / A_max * (q * diff_f_pow - r);
         }
       double error = error_p2m / n_p2m_freqs + error_m2p * rho / n_m2p_freqs;
-      if (error < min_error)
-        {
-          best_freq = freq;
-          min_error = error;
-        }
       return error;
     };
   double best_e = 1e300;
