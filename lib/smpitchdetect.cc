@@ -270,9 +270,11 @@ note_to_freq (double note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
-double
-SpectMorph::detect_pitch (WavData& wav_data)
+static double
+detect_pitch_mono (WavData& wav_data)
 {
+  assert (wav_data.n_channels() == 1);
+
   double best_snr = 0;
   vector<double> freqs;
   vector<vector<SineDetectPartial>> best_partials_vec;
@@ -386,4 +388,33 @@ SpectMorph::detect_pitch (WavData& wav_data)
   double best_note = get_best_note (best_note_estimate - 2, best_note_estimate + 2, 0.01);
 
   return best_note;
+}
+
+namespace SpectMorph
+{
+
+double
+detect_pitch (WavData& wav_data)
+{
+  if (wav_data.n_channels() == 1)
+    {
+      return detect_pitch_mono (wav_data);
+    }
+  else
+    {
+      const vector<float> in_samples = wav_data.samples();
+      vector<float> flat_mono_samples;
+      int n_channels = wav_data.n_channels();
+
+      for (int ch = 0; ch < n_channels; ch++)
+        {
+          for (size_t i = ch; i < in_samples.size(); i += n_channels)
+            flat_mono_samples.push_back (in_samples[i]);
+        }
+
+      WavData flat_wav_data (flat_mono_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
+      return detect_pitch_mono (flat_wav_data);
+    }
+}
+
 }
