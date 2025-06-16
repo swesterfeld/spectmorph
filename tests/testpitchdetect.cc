@@ -146,39 +146,6 @@ sine_detect (double mix_freq, const vector<float>& signal)
   return partials;
 }
 
-double
-golden_section_search (std::function<double(double)> f, double a, double b, double tolerance)
-{
-  const double invphi = (sqrt (5) - 1) / 2;
-
-  double c = b - (b - a) * invphi;
-  double d = a + (b - a) * invphi;
-  double fc = f (c);
-  double fd = f (d);
-
-  while ((b - a) > tolerance)
-    {
-      if (fc < fd)
-        {
-          b = d;
-          d = c;
-          fd = fc;
-          c = b - (b - a) * invphi;
-          fc = f (c);
-        }
-      else
-        {
-          a = c;
-          c = d;
-          fc = fd;
-          d = a + (b - a) * invphi;
-          fd = f (d);
-        }
-    }
-
-  return (b + a) / 2;
-}
-
 std::pair<double, double>
 pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
@@ -190,21 +157,17 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
   double min_error = 1e9;
   double best_freq = 0;
   vector<double> freqs, mags, fc;
+  double best_partial_f = 0;
   for (auto p : partials)
     {
+      if (A_max < p.mag)
+        best_partial_f = p.freq;
       A_max = std::max (A_max, p.mag);
       f_max = std::max (f_max, p.freq);
       sm_printf ("%f %f #P\n", p.freq, p.mag);
       freqs.push_back (p.freq);
       mags.push_back (p.mag);
     }
-#if 0
-  for (float freq = 10; freq < 4000; freq *= 1.01)
-    fc.push_back (freq);
-  auto tc = TWM_p (freqs, mags, fc);
-
-  sm_printf ("TWM_p: %f %f\n", tc.first, tc.second);
-#endif
 
   vector<double> error_grid;
   vector<double> freq_grid;
@@ -253,54 +216,52 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         }
       return error;
     };
-  const double scan_grid_factor = 1.01;
-  for (float freq = 10; freq < 5000; freq *= scan_grid_factor)
-    {
-      freq_grid.push_back (freq);
-      error_grid.push_back (get_error (freq));
-    }
-  sm_printf ("best_freq %f, error %f\n", best_freq, min_error);
+  double best_e = 1e300;
+  double best_f = 0;
 
-  vector<double> freq_opt, err_opt;
-  for (size_t i = 1; i + 2 < error_grid.size(); i++)
+  auto improve_estimate = [&] (double f)
     {
-      /*
-       * handle two cases: normal minimum and two-value minimum
-       *
-       *   *       *                *            *
-       *     \   /                    \        /
-       *       *                        * -- *
-       *   e1  e2  e3               e1  e2  e3  e4
-       */
-      const auto [e1, e2, e3, e4] = std::tie (error_grid[i - 1], error_grid[i], error_grid[i + 1],  error_grid[i + 2]);
-      if ((e1 > e2 && e2 < e3) || (e1 > e2 && e2 == e3 && e3 < e4))
+      double e = get_error (f);
+      if (e < best_e)
         {
-          sm_printf ("found local minimum: %f error %f\n", freq_grid[i], error_grid[i]);
-          double tolerance = freq_grid[i] * 0.0001; /* a lot better than 1 cent resolution */
-          double f;
-
-          if (e2 == e3)
-            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 2], tolerance); // two value minimum
-          else
-            f = golden_section_search (get_error, freq_grid[i - 1], freq_grid[i + 1], tolerance); // normal minimum
-
-          freq_opt.push_back (f);
-          err_opt.push_back (get_error (f));
-          sm_printf ("optimized: %f %f\n", freq_opt.back(), err_opt.back());
+          best_e = e;
+          best_f = f;
+          return true;
         }
-    }
-  double best_err_opt = 1e9;
-  double best_freq_opt = 1e9;
-  for (size_t i = 0; i < freq_opt.size(); i++)
-    {
-      if (err_opt[i] < best_err_opt)
+      else
         {
-          best_freq_opt = freq_opt[i];
-          best_err_opt = err_opt[i];
+          return false;
         }
-    }
-  sm_printf ("best_freq_opt %f, best_err_opt %f\n", best_freq_opt, best_err_opt);
-  return std::make_pair (best_freq_opt, best_err_opt);
+    };
+
+  /* the fundamental frequency is very often one of the frequencies in the
+   * partial list we have
+   */
+  for (auto p : partials)
+    improve_estimate (p.freq);
+
+  /* typically the loudest partial is an integer multiple of the fundamental
+   * frequency, so this can be used in cases where the fundamental is missing
+   * in the input partial list
+   */
+  for (int n = 1; n <= 64; n++)
+    improve_estimate (best_partial_f / n);
+
+  /* at this point we're already really close to a local minimum, typically
+   * only a few cent away, so we try to do a few improvement steps to get
+   * cent resolution for the pitch detection
+   */
+  const double cent_factor = 1.00057778950655;
+
+  for (int it = 0; improve_estimate (best_f * cent_factor) && it < 100; it++);
+  for (int it = 0; improve_estimate (best_f / cent_factor) && it < 100; it++);
+
+  /* correct for possible octave error (however this is unlikely to happen) */
+  for (auto f : { best_f / 4, best_f / 3, best_f / 2, best_f * 2, best_f * 3, best_f * 4})
+    improve_estimate (f);
+
+  sm_printf ("%f %f #F\n", best_f, best_e);
+  return std::make_pair (best_f, best_e);
 }
 
 static double
