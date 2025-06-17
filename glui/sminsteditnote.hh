@@ -13,9 +13,74 @@
 #include "smscrollview.hh"
 #include "smsynthinterface.hh"
 #include "smsimplelines.hh"
+#include "smpitchdetect.hh"
 
 namespace SpectMorph
 {
+
+class PitchDetectionThread : public SignalReceiver
+{
+  std::thread worker;
+  std::atomic<bool> done;
+  std::atomic<bool> killed = false;
+  double midi_note = -1;
+  WavData wav_data_copy;
+  Sample *sample = nullptr;
+
+  void
+  on_samples_changed()
+  {
+    /* ui thread */
+    printf ("samples changed\n");
+    sample = nullptr;
+    killed = true;
+  }
+public:
+  PitchDetectionThread (Window *window, Instrument *instrument, Sample *sample) :
+    done (false),
+    sample (sample)
+  {
+    /* ui thread */
+    wav_data_copy = sample->wav_data();
+    connect (instrument->signal_samples_changed, this, &PitchDetectionThread::on_samples_changed);
+
+    worker = std::thread ([this]()
+      {
+        /* worker thread */
+        midi_note = detect_pitch (wav_data_copy, [this] { return killed.load(); });
+        printf ("%f\n", midi_note);
+        done = true;
+      });
+  }
+
+  ~PitchDetectionThread()
+  {
+    /* ui thread */
+    killed = true;
+    worker.join();
+  }
+
+  void
+  timer_tick()
+  {
+    /* ui thread */
+    printf (".");
+    fflush (stdout);
+    if (is_done())
+      {
+        printf ("sample->set_midi_note, sample = %p\n", sample);
+        if (sample)
+          sample->set_midi_note (lrint (midi_note));
+      }
+  }
+
+  bool
+  is_done() const
+  {
+    /* any thread */
+    return done.load();
+  }
+};
 
 class NoteWidget : public Widget
 {
@@ -241,9 +306,11 @@ public:
 class InstEditNote : public Window
 {
   NoteWidget *note_widget = nullptr;
+  Timer *timer = nullptr;
+  std::unique_ptr<PitchDetectionThread> pitch_detection_thread;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
-    Window (*window->event_loop(), "SpectMorph - Instrument Note", 13 * 40 + 2 * 8, 9 * 40 + 6 * 8, 0, false, window->native_window())
+    Window (*window->event_loop(), "SpectMorph - Instrument Note", 13 * 40 + 2 * 8, 9 * 40 + 8 * 8, 0, false, window->native_window())
   {
     set_close_callback ([this]() {
       signal_closed();
@@ -255,7 +322,7 @@ public:
 
     note_widget = new NoteWidget (this, instrument, synth_interface);
     FixedGrid grid;
-    grid.add_widget (note_widget, 1, 1, width() / 8 - 2, height() / 8 - 6);
+    grid.add_widget (note_widget, 1, 1, width() / 8 - 2, height() / 8 - 8);
 
     Label *left = new Label (this, "Left Click");
     Label *left_txt = new Label (this, "Play Reference");
@@ -273,19 +340,38 @@ public:
     Label *space_txt = new Label (this, "Play Selected Note");
     space->set_bold (true);
 
+    timer = new Timer (this);
+    timer->start (0);
+    connect (timer->signal_timeout, [this] ()
+      {
+        if (pitch_detection_thread)
+          {
+            pitch_detection_thread->timer_tick();
+            if (pitch_detection_thread->is_done())
+              pitch_detection_thread.reset();
+          }
+      });
+
+    Button *detect_note = new Button (this, "Detect Midi Note");
+    connect (detect_note->signal_clicked, [this, instrument]()
+      {
+        Sample *sample = instrument->sample (instrument->selected());
+        if (sample)
+          pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
+      });
+
     grid.dx = 4;
-    grid.dy = height() / 8 - 5;
+    grid.dy = height() / 8 - 7;
 
     double xw = 12;
-    grid.add_widget (dbl, 0, 2, xw, 3);
-    grid.add_widget (dbl_txt, xw, 2, 20, 3);
     grid.add_widget (space, 0, 0, xw, 3);
     grid.add_widget (space_txt, xw, 0, 20, 3);
+    grid.add_widget (detect_note, 0, 3, 25, 3);
 
     grid.dx = width() / 8 / 2;
-    grid.dy = height() / 8 - 5;
+    grid.dy = height() / 8 - 7;
 
-    grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 5);
+    grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 7);
 
     grid.dx += 4;
 
@@ -294,6 +380,8 @@ public:
     grid.add_widget (left_txt, xw, 0, 20, 3);
     grid.add_widget (right, 0, 2, xw, 3);
     grid.add_widget (right_txt, xw, 2, 20, 3);
+    grid.add_widget (dbl, 0, 4, xw, 3);
+    grid.add_widget (dbl_txt, xw, 4, 20, 3);
 
     show();
   }
