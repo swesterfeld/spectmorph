@@ -6,5 +6,5 @@
 
 namespace SpectMorph
 {
-double detect_pitch (WavData& wav_data);
+double detect_pitch (const WavData& wav_data, std::function<bool()> kill_function = nullptr);
 }

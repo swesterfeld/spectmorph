@@ -259,7 +259,7 @@ note_to_freq (double note)
 }
 
 static double
-detect_pitch_mono (WavData& wav_data)
+detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
 {
   assert (wav_data.n_channels() == 1);
 
@@ -309,6 +309,9 @@ detect_pitch_mono (WavData& wav_data)
               snr_signal_power += signal * signal;
               snr_delta_power += delta * delta;
             }
+
+          if (kill_function && kill_function())
+            return -1;
         }
       double snr = 10 * log10 (snr_signal_power / snr_delta_power);
       if (snr > best_snr)
@@ -339,6 +342,8 @@ detect_pitch_mono (WavData& wav_data)
           freqs.push_back (twm_freq);
           mag_sums.push_back (A_sum);
         }
+      if (kill_function && kill_function())
+        return -1;
     }
 
   auto get_best_note = [&] (double note_min, double note_max, double step)
@@ -382,11 +387,11 @@ namespace SpectMorph
 {
 
 double
-detect_pitch (WavData& wav_data)
+detect_pitch (const WavData& wav_data, std::function<bool()> kill_function)
 {
   if (wav_data.n_channels() == 1)
     {
-      return detect_pitch_mono (wav_data);
+      return detect_pitch_mono (wav_data, kill_function);
     }
   else
     {
@@ -401,7 +406,7 @@ detect_pitch (WavData& wav_data)
         }
 
       WavData flat_wav_data (flat_mono_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
-      return detect_pitch_mono (flat_wav_data);
+      return detect_pitch_mono (flat_wav_data, kill_function);
     }
 }
 
