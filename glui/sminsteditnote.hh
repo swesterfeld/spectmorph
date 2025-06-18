@@ -14,6 +14,7 @@
 #include "smsynthinterface.hh"
 #include "smsimplelines.hh"
 #include "smpitchdetect.hh"
+#include "smprogressbar.hh"
 
 namespace SpectMorph
 {
@@ -23,6 +24,7 @@ class PitchDetectionThread : public SignalReceiver
   std::thread worker;
   std::atomic<bool> done;
   std::atomic<bool> killed = false;
+  std::atomic<double> progress = 0;
   double midi_note = -1;
   WavData wav_data_copy;
   Sample *sample = nullptr;
@@ -47,7 +49,7 @@ public:
     worker = std::thread ([this]()
       {
         /* worker thread */
-        midi_note = detect_pitch (wav_data_copy, [this] { return killed.load(); });
+        midi_note = detect_pitch (wav_data_copy, [this] (double progress) { this->progress = progress; return killed.load(); });
         printf ("%f\n", midi_note);
         done = true;
       });
@@ -60,18 +62,17 @@ public:
     worker.join();
   }
 
-  void
+  double
   timer_tick()
   {
     /* ui thread */
-    printf (".");
-    fflush (stdout);
     if (is_done())
       {
         printf ("sample->set_midi_note, sample = %p\n", sample);
         if (sample)
           sample->set_midi_note (lrint (midi_note));
       }
+    return progress.load();
   }
 
   bool
@@ -307,6 +308,8 @@ class InstEditNote : public Window
 {
   NoteWidget *note_widget = nullptr;
   Timer *timer = nullptr;
+  ProgressBar *detect_note_progress_bar = nullptr;
+  Button *detect_note_button = nullptr;
   std::unique_ptr<PitchDetectionThread> pitch_detection_thread;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
@@ -346,19 +349,31 @@ public:
       {
         if (pitch_detection_thread)
           {
-            pitch_detection_thread->timer_tick();
+            double progress = pitch_detection_thread->timer_tick();
+            detect_note_progress_bar->set_value (progress * 0.01);
             if (pitch_detection_thread->is_done())
-              pitch_detection_thread.reset();
+              {
+                pitch_detection_thread.reset();
+                detect_note_button->set_visible (true);
+                detect_note_progress_bar->set_visible (false);
+              }
           }
       });
 
-    Button *detect_note = new Button (this, "Detect Midi Note");
-    connect (detect_note->signal_clicked, [this, instrument]()
+    detect_note_button = new Button (this, "Detect Midi Note");
+    connect (detect_note_button->signal_clicked, [this, instrument]()
       {
         Sample *sample = instrument->sample (instrument->selected());
         if (sample)
-          pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
+          {
+            pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
+            detect_note_button->set_visible (false);
+            detect_note_progress_bar->set_visible (true);
+          }
       });
+    /*--- Playback: progress ---*/
+    detect_note_progress_bar = new ProgressBar (this);
+    detect_note_progress_bar->set_visible (false);
 
     grid.dx = 4;
     grid.dy = height() / 8 - 7;
@@ -366,7 +381,8 @@ public:
     double xw = 12;
     grid.add_widget (space, 0, 0, xw, 3);
     grid.add_widget (space_txt, xw, 0, 20, 3);
-    grid.add_widget (detect_note, 0, 3, 25, 3);
+    grid.add_widget (detect_note_button, 0, 3, 25, 3);
+    grid.add_widget (detect_note_progress_bar, 0, 3, 25, 3);
 
     grid.dx = width() / 8 / 2;
     grid.dy = height() / 8 - 7;
