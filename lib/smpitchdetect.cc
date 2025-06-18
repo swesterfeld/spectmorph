@@ -259,16 +259,18 @@ note_to_freq (double note)
 }
 
 static double
-detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
+detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_progress_function)
 {
   assert (wav_data.n_channels() == 1);
 
   double best_snr = 0;
   vector<double> freqs;
   vector<vector<SineDetectPartial>> best_partials_vec;
-  for (int window_size_ms = 5; window_size_ms <= 160; window_size_ms *= 2)
+
+  vector<int> window_size_ms { 5, 10, 20, 40, 80, 160 };
+  for (size_t ws_index = 0; ws_index < window_size_ms.size(); ws_index++)
     {
-      int ssz = window_size_ms * 0.001 * wav_data.mix_freq();
+      int ssz = window_size_ms[ws_index] * 0.001 * wav_data.mix_freq();
       if (ssz % 2 == 0)
         ssz += 1;
 
@@ -281,6 +283,12 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
         {
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
+
+      size_t progress_frames_total = 0;
+      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
+        progress_frames_total++;
+
+      size_t progress_frames_done = 0;
       for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
@@ -310,7 +318,7 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
               snr_delta_power += delta * delta;
             }
 
-          if (kill_function && kill_function())
+          if (kill_progress_function && kill_progress_function ((ws_index + double (progress_frames_done++) / progress_frames_total) * 90.0 / window_size_ms.size()))
             return -1;
         }
       double snr = 10 * log10 (snr_signal_power / snr_delta_power);
@@ -321,8 +329,10 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
         }
     }
   vector<double> mag_sums;
-  for (auto partials : best_partials_vec)
+  for (size_t bpv_index = 0; bpv_index < best_partials_vec.size(); bpv_index++)
     {
+      const auto& partials = best_partials_vec[bpv_index];
+
       double A_max = 0;
       double A_sum = 0;
       for (auto p : partials)
@@ -342,7 +352,7 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
           freqs.push_back (twm_freq);
           mag_sums.push_back (A_sum);
         }
-      if (kill_function && kill_function())
+      if (kill_progress_function && kill_progress_function (90 + 10.0 * bpv_index / best_partials_vec.size()))
         return -1;
     }
 
@@ -380,6 +390,8 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool()> kill_function)
    */
   double best_note = get_best_note (best_note_estimate - 2, best_note_estimate + 2, 0.01);
 
+  if (kill_progress_function)
+    kill_progress_function (100);
   return best_note;
 }
 
@@ -387,11 +399,11 @@ namespace SpectMorph
 {
 
 double
-detect_pitch (const WavData& wav_data, std::function<bool()> kill_function)
+detect_pitch (const WavData& wav_data, std::function<bool (double)> kill_progress_function)
 {
   if (wav_data.n_channels() == 1)
     {
-      return detect_pitch_mono (wav_data, kill_function);
+      return detect_pitch_mono (wav_data, kill_progress_function);
     }
   else
     {
@@ -406,7 +418,7 @@ detect_pitch (const WavData& wav_data, std::function<bool()> kill_function)
         }
 
       WavData flat_wav_data (flat_mono_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
-      return detect_pitch_mono (flat_wav_data, kill_function);
+      return detect_pitch_mono (flat_wav_data, kill_progress_function);
     }
 }
 
