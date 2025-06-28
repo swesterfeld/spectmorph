@@ -417,16 +417,26 @@ main (int argc, char **argv)
           exit (1);
         }
     }
-  if (options.fundamental_freq_detect_note)
+  auto detect_note = [&]
     {
       double note = detect_pitch (wav_data);
+      if (note < 0)
+        {
+          fprintf (stderr, "%s: pitch detection failed\n", options.program_name.c_str());
+          exit (1);
+        }
+      return note;
+    };
+  if (options.fundamental_freq_detect_note)
+    {
+      double note = detect_note();
       int round_note = lrint (note);
       options.fundamental_freq = freqFromNote (round_note);
       sm_printf ("Detected midi note %.2f, rounded to %d, fundamental frequency %.2f.\n", note, round_note, options.fundamental_freq);
     }
   if (options.fundamental_freq_detect_freq)
     {
-      double note = detect_pitch (wav_data);
+      double note = detect_note();
       options.fundamental_freq = freqFromNote (note);
       sm_printf ("Detected midi note %.2f, fundamental frequency %.2f.\n", note, options.fundamental_freq);
     }
