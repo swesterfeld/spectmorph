@@ -321,11 +321,14 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
           if (kill_progress_function && kill_progress_function ((ws_index + double (progress_frames_done++) / progress_frames_total) * 90.0 / window_size_ms.size()))
             return -1;
         }
-      double snr = 10 * log10 (snr_signal_power / snr_delta_power);
-      if (snr > best_snr)
+      if (progress_frames_total > 0)
         {
-          best_snr = snr;
-          best_partials_vec = partials_vec;
+          double snr = 10 * log10 (snr_signal_power / snr_delta_power);
+          if (snr > best_snr)
+            {
+              best_snr = snr;
+              best_partials_vec = partials_vec;
+            }
         }
     }
   vector<double> mag_sums;
@@ -382,13 +385,17 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
       return best_note;
     };
 
-  double best_note_estimate = get_best_note (0, 128, 0.1);
+  double best_note = -1; /* return -1 if pitch detection fails */
+  if (freqs.size())
+    {
+      double best_note_estimate = get_best_note (0, 128, 0.1);
 
-  /* - improve estimate using finer grid
-   * - assume final result is in +200/-200 cent of previous estimate
-   * - exclude outliers (+200/-200 cent) from error computation
-   */
-  double best_note = get_best_note (best_note_estimate - 2, best_note_estimate + 2, 0.01);
+      /* - improve estimate using finer grid
+       * - assume final result is in +200/-200 cent of previous estimate
+       * - exclude outliers (+200/-200 cent) from error computation
+       */
+      best_note = get_best_note (best_note_estimate - 2, best_note_estimate + 2, 0.01);
+    }
 
   if (kill_progress_function)
     kill_progress_function (100);
