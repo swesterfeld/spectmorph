@@ -33,7 +33,6 @@ class PitchDetectionThread : public SignalReceiver
   on_samples_changed()
   {
     /* ui thread */
-    printf ("samples changed\n");
     sample = nullptr;
     killed = true;
   }
@@ -50,7 +49,6 @@ public:
       {
         /* worker thread */
         midi_note = detect_pitch (wav_data_copy, [this] (double progress) { this->progress = progress; return killed.load(); });
-        printf ("%f\n", midi_note);
         done = true;
       });
   }
@@ -68,8 +66,7 @@ public:
     /* ui thread */
     if (is_done())
       {
-        printf ("sample->set_midi_note, sample = %p\n", sample);
-        if (sample)
+        if (sample && midi_note != -1) // midi_note is -1 if pitch detection failed
           sample->set_midi_note (lrint (midi_note));
       }
     return progress.load();
