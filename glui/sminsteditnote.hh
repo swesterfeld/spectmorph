@@ -57,14 +57,19 @@ public:
         done = true;
       });
   }
-
   ~PitchDetectionThread()
   {
     /* ui thread */
     killed = true;
     worker.join();
   }
-
+  int
+  result()
+  {
+    /* ui thread */
+    assert (is_done());
+    return lrint (midi_note);
+  }
   double
   timer_tick()
   {
@@ -76,7 +81,6 @@ public:
       }
     return progress.load();
   }
-
   bool
   is_done() const
   {
@@ -117,6 +121,9 @@ class NoteWidget : public Widget
   int mouse_note = -1;
   int left_pressed_note = -1;
   int right_pressed_note = -1;
+  int pitch_detection_note = -1;
+  int pitch_detection_age = 0;
+  Timer *pitch_detection_note_timer = nullptr;
   Instrument     *instrument      = nullptr;
   SynthInterface *synth_interface = nullptr;
   std::vector<int> active_notes;
@@ -127,6 +134,8 @@ public:
     instrument (instrument),
     synth_interface (synth_interface)
   {
+    pitch_detection_note_timer = new Timer (this);
+    connect (pitch_detection_note_timer->signal_timeout, this, &NoteWidget::on_pitch_detection_timer);
     connect (instrument->signal_samples_changed, this, &NoteWidget::on_samples_changed);
   }
   void
@@ -194,7 +203,8 @@ public:
             for (auto note : active_notes)
               if (n == note)
                 note_playing = true;
-            if (n == mouse_note || note_playing)
+            bool display_pitch_detect = (n == pitch_detection_note && (pitch_detection_age % 2) == 0);
+            if (n == mouse_note || display_pitch_detect || note_playing)
               {
                 double xspace = width() / cols / 10;
                 double yspace = height() / rows / 10;
@@ -204,6 +214,12 @@ public:
                   {
                     frame_color = Color::null();
                     fill_color  = ThemeColor::SLIDER;
+                    text_color  = Color (0, 0, 0);
+                  }
+                else if (display_pitch_detect)
+                  {
+                    frame_color = Color::null();
+                    fill_color  = ThemeColor::MENU_ITEM;
                     text_color  = Color (0, 0, 0);
                   }
                 else
@@ -304,6 +320,23 @@ public:
         update();
       }
   }
+  void
+  set_pitch_detection_note (int note)
+  {
+    pitch_detection_age  = 0;
+    pitch_detection_note = note;
+    update();
+
+    pitch_detection_note_timer->start (300);
+  }
+  void
+  on_pitch_detection_timer()
+  {
+    pitch_detection_age++;
+    if (pitch_detection_age == 3)
+      pitch_detection_note_timer->stop();
+    update();
+  }
 };
 
 class InstEditNote : public Window
@@ -355,6 +388,9 @@ public:
             detect_note_progress_bar->set_value (progress * 0.01);
             if (pitch_detection_thread->is_done())
               {
+                int note = pitch_detection_thread->result();
+                if (note >= 0)
+                  note_widget->set_pitch_detection_note (note);
                 pitch_detection_thread.reset();
                 detect_note_button->set_visible (true);
                 detect_note_progress_bar->set_visible (false);
