@@ -2,6 +2,9 @@
 
 #include "smmain.hh"
 #include "smpitchdetect.hh"
+#include "smfft.hh"
+
+#include <math.h>
 
 #include <cassert>
 
@@ -10,9 +13,16 @@ using namespace SpectMorph;
 using std::vector;
 using std::pair;
 
-static const auto trumpet_60_expect = std::make_pair (
-  263.08582059999997682, -0.12743576281645577
-);
+struct Expect
+{
+  double freq = 0;
+  double err = 0;
+  double note = 0;
+};
+static const Expect trumpet_60_expect {
+  263.08582059999997682, -0.12743576281645577,
+  60.1
+};
 static const vector<double> trumpet_60 =
 {
   263.277580, 0.006140,
@@ -43,9 +53,10 @@ static const vector<double> trumpet_60 =
   6838.365457, 0.000836,
 };
 
-static const auto sven_ih_42_expect = std::make_pair (
-  91.218589893051316, 2.1525047085249298
-);
+static const Expect sven_ih_42_expect {
+  91.218589893051316, 2.1525047085249298,
+  41.76
+};
 static const vector<double> sven_ih_42 =
 {
 //  91.190898, 0.067204,  (( test missing fundamental ))
@@ -89,21 +100,37 @@ static const vector<double> sven_ih_42 =
 };
 
 void
-test (const char *name, const vector<double>& freqs_mags, const pair<double, double> expect)
+test (const char *name, const vector<double>& freqs_mags, const Expect& expect)
 {
   auto [ freq, error ] = pitch_detect_twm_test (freqs_mags);
-  auto [ xfreq, xerror ] = expect;
-  double f_delta = std::abs (freq - xfreq);
-  double e_delta = std::abs (error - xerror);
-  sm_printf ("%s: %.17g %.17g (f_delta=%.17g e_delta=%.17g)\n", name, freq, error, f_delta, e_delta);
-  assert (f_delta < 1e-7);
-  assert (e_delta < 1e-7);
+  double f_delta = std::abs (freq - expect.freq);
+  double e_delta = std::abs (error - expect.err);
+  sm_printf ("%s:\n", name);
+  sm_printf (" - freq      %11.7f (f_delta=%.7g)\n", freq, f_delta);
+  sm_printf (" - twm_error %11.7f (e_delta=%.7g)\n", error, e_delta);
+  assert (f_delta < 1e-12);
+  assert (e_delta < 1e-12);
+
+  const int SR = 48000;
+  vector<float> samples (SR * 0.5);
+  for (size_t i = 0; i < samples.size(); i++)
+    {
+      for (size_t f = 0; f < freqs_mags.size(); f += 2)
+        samples[i] += sin (i * 2 * M_PI * freqs_mags[f] / SR) * freqs_mags[f + 1];
+    }
+  WavData wav_data (samples, /* mono */ 1, SR, /* bits */ 32);
+  double note = detect_pitch (wav_data);
+  double n_delta = std::abs (note - expect.note);
+  sm_printf (" - note      %11.7f (n_delta=%.2f)\n", note, n_delta);
+  assert (n_delta < 1e-12);
+  printf ("\n");
 }
 
 int
 main (int argc, char **argv)
 {
   Main main (&argc, &argv);
+  FFT::debug_in_test_program (true);
 
   if (argc == 2)
     {
