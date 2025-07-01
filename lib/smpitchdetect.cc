@@ -150,7 +150,7 @@ sine_detect (double mix_freq, const vector<float>& signal)
 }
 
 std::pair<double, double>
-pitch_detect_twm (const vector<SineDetectPartial>& partials)
+static pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
   if (partials.size() == 0)
     return std::make_pair (-1.0, -1.0);
@@ -343,7 +343,6 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
           A_max = std::max (p.mag, A_max);
           A_sum += p.mag;
         }
-
       vector<SineDetectPartial> strong_partials;
       for (auto p : partials)
         if (p.mag / A_max > 0.01)
@@ -427,6 +426,20 @@ detect_pitch (const WavData& wav_data, std::function<bool (double)> kill_progres
       WavData flat_wav_data (flat_mono_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
       return detect_pitch_mono (flat_wav_data, kill_progress_function);
     }
+}
+
+std::pair<double, double>
+pitch_detect_twm_test (const vector<double>& freqs_mags) /* for unit tests */
+{
+  vector<SineDetectPartial> partials;
+  for (size_t i = 0; i < freqs_mags.size(); i += 2)
+    {
+      SineDetectPartial p;
+      p.freq = freqs_mags[i];
+      p.mag  = freqs_mags[i + 1];
+      partials.push_back (p);
+    }
+  return pitch_detect_twm (partials);
 }
 
 }
