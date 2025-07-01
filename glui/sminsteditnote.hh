@@ -26,7 +26,7 @@ class PitchDetectionThread : public SignalReceiver
   std::atomic<bool> killed = false;
   std::atomic<double> progress = 0;
   double midi_note = -1;
-  WavData wav_data_copy;
+  Sample::SharedP sample_shared; // keep Sample wav_data alive as long as needed
   Sample *sample = nullptr;
 
   void
@@ -39,16 +39,21 @@ class PitchDetectionThread : public SignalReceiver
 public:
   PitchDetectionThread (Window *window, Instrument *instrument, Sample *sample) :
     done (false),
+    sample_shared (sample->shared()),
     sample (sample)
   {
     /* ui thread */
-    wav_data_copy = sample->wav_data();
     connect (instrument->signal_samples_changed, this, &PitchDetectionThread::on_samples_changed);
 
     worker = std::thread ([this]()
       {
-        /* worker thread */
-        midi_note = detect_pitch (wav_data_copy, [this] (double progress) { this->progress = progress; return killed.load(); });
+        /* worker thread
+         *
+         * using sample_shared keeps a reference on the wav_data of the sample,
+         * which keeps alive the wav_data we're using for pitch detection even
+         * if the Instrument Sample is destroyed before we're done
+         */
+        midi_note = detect_pitch (sample_shared->wav_data(), [this] (double progress) { this->progress = progress; return killed.load(); });
         done = true;
       });
   }
