@@ -2,6 +2,7 @@
 
 #include "smfft.hh"
 #include "smutils.hh"
+#include "smrandom.hh"
 #include <algorithm>
 #include <map>
 #include <mutex>
@@ -55,9 +56,10 @@ FFT::new_array_float (size_t N)
 
   if (fft_in_test_program)
     {
+      Random rng;
       /* catches uninitialized reads on newly allocated fft buffer */
       for (size_t i = 0; i < N_2; i++)
-        result[i] = g_random_double_range (-1, 1);
+        result[i] = rng.random_float_range (-1, 1);
     }
   return result;
 }
