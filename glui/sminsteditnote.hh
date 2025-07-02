@@ -22,7 +22,7 @@ namespace SpectMorph
 class PitchDetectionThread : public SignalReceiver
 {
   std::thread worker;
-  std::atomic<bool> done;
+  std::atomic<bool> done = false;
   std::atomic<bool> killed = false;
   std::atomic<double> progress = 0;
   double midi_note = -1;
@@ -38,7 +38,6 @@ class PitchDetectionThread : public SignalReceiver
   }
 public:
   PitchDetectionThread (Window *window, Instrument *instrument, Sample *sample) :
-    done (false),
     sample_shared (sample->shared()),
     sample (sample)
   {
