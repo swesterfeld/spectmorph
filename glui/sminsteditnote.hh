@@ -13,9 +13,80 @@
 #include "smscrollview.hh"
 #include "smsynthinterface.hh"
 #include "smsimplelines.hh"
+#include "smpitchdetect.hh"
+#include "smprogressbar.hh"
 
 namespace SpectMorph
 {
+
+class PitchDetectionThread : public SignalReceiver
+{
+  std::thread worker;
+  std::atomic<bool> done = false;
+  std::atomic<bool> killed = false;
+  std::atomic<double> progress = 0;
+  double midi_note = -1;
+  Sample::SharedP sample_shared; // keep Sample wav_data alive as long as needed
+  Sample *sample = nullptr;
+
+  void
+  on_samples_changed()
+  {
+    /* ui thread */
+    sample = nullptr;
+    killed = true;
+  }
+public:
+  PitchDetectionThread (Window *window, Instrument *instrument, Sample *sample) :
+    sample_shared (sample->shared()),
+    sample (sample)
+  {
+    /* ui thread */
+    connect (instrument->signal_samples_changed, this, &PitchDetectionThread::on_samples_changed);
+
+    worker = std::thread ([this]()
+      {
+        /* worker thread
+         *
+         * using sample_shared keeps a reference on the wav_data of the sample,
+         * which keeps alive the wav_data we're using for pitch detection even
+         * if the Instrument Sample is destroyed before we're done
+         */
+        midi_note = detect_pitch (sample_shared->wav_data(), [this] (double progress) { this->progress = progress; return killed.load(); });
+        done = true;
+      });
+  }
+  ~PitchDetectionThread()
+  {
+    /* ui thread */
+    killed = true;
+    worker.join();
+  }
+  int
+  result()
+  {
+    /* ui thread */
+    assert (is_done());
+    return lrint (midi_note);
+  }
+  double
+  timer_tick()
+  {
+    /* ui thread */
+    if (is_done())
+      {
+        if (sample && midi_note != -1) // midi_note is -1 if pitch detection failed
+          sample->set_midi_note (lrint (midi_note));
+      }
+    return progress.load();
+  }
+  bool
+  is_done() const
+  {
+    /* any thread */
+    return done.load();
+  }
+};
 
 class NoteWidget : public Widget
 {
@@ -49,6 +120,9 @@ class NoteWidget : public Widget
   int mouse_note = -1;
   int left_pressed_note = -1;
   int right_pressed_note = -1;
+  int pitch_detection_note = -1;
+  int pitch_detection_age = 0;
+  Timer *pitch_detection_note_timer = nullptr;
   Instrument     *instrument      = nullptr;
   SynthInterface *synth_interface = nullptr;
   std::vector<int> active_notes;
@@ -59,6 +133,8 @@ public:
     instrument (instrument),
     synth_interface (synth_interface)
   {
+    pitch_detection_note_timer = new Timer (this);
+    connect (pitch_detection_note_timer->signal_timeout, this, &NoteWidget::on_pitch_detection_timer);
     connect (instrument->signal_samples_changed, this, &NoteWidget::on_samples_changed);
   }
   void
@@ -126,7 +202,8 @@ public:
             for (auto note : active_notes)
               if (n == note)
                 note_playing = true;
-            if (n == mouse_note || note_playing)
+            bool display_pitch_detect = (n == pitch_detection_note && (pitch_detection_age % 2) == 0);
+            if (n == mouse_note || display_pitch_detect || note_playing)
               {
                 double xspace = width() / cols / 10;
                 double yspace = height() / rows / 10;
@@ -136,6 +213,12 @@ public:
                   {
                     frame_color = Color::null();
                     fill_color  = ThemeColor::SLIDER;
+                    text_color  = Color (0, 0, 0);
+                  }
+                else if (display_pitch_detect)
+                  {
+                    frame_color = Color::null();
+                    fill_color  = ThemeColor::MENU_ITEM;
                     text_color  = Color (0, 0, 0);
                   }
                 else
@@ -236,14 +319,36 @@ public:
         update();
       }
   }
+  void
+  set_pitch_detection_note (int note)
+  {
+    pitch_detection_age  = 0;
+    pitch_detection_note = note;
+    update();
+
+    pitch_detection_note_timer->start (300);
+  }
+  void
+  on_pitch_detection_timer()
+  {
+    pitch_detection_age++;
+    if (pitch_detection_age == 3)
+      pitch_detection_note_timer->stop();
+    update();
+  }
 };
 
 class InstEditNote : public Window
 {
   NoteWidget *note_widget = nullptr;
+  Timer *detect_note_timer = nullptr;
+  ProgressBar *detect_note_progress_bar = nullptr;
+  Button *detect_note_button = nullptr;
+  Button *detect_note_cancel_button = nullptr;
+  std::unique_ptr<PitchDetectionThread> pitch_detection_thread;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
-    Window (*window->event_loop(), "SpectMorph - Instrument Note", 13 * 40 + 2 * 8, 9 * 40 + 6 * 8, 0, false, window->native_window())
+    Window (*window->event_loop(), "SpectMorph - Instrument Note", 13 * 40 + 2 * 8, 9 * 40 + 8 * 8, 0, false, window->native_window())
   {
     set_close_callback ([this]() {
       signal_closed();
@@ -255,7 +360,7 @@ public:
 
     note_widget = new NoteWidget (this, instrument, synth_interface);
     FixedGrid grid;
-    grid.add_widget (note_widget, 1, 1, width() / 8 - 2, height() / 8 - 6);
+    grid.add_widget (note_widget, 1, 1, width() / 8 - 2, height() / 8 - 8);
 
     Label *left = new Label (this, "Left Click");
     Label *left_txt = new Label (this, "Play Reference");
@@ -273,19 +378,74 @@ public:
     Label *space_txt = new Label (this, "Play Selected Note");
     space->set_bold (true);
 
+    /*--- detect note: timer ---*/
+    detect_note_timer = new Timer (this);
+    connect (detect_note_timer->signal_timeout, [this] ()
+      {
+        if (pitch_detection_thread)
+          {
+            double progress = pitch_detection_thread->timer_tick();
+            detect_note_progress_bar->set_value (progress * 0.01);
+            if (pitch_detection_thread->is_done())
+              {
+                int note = pitch_detection_thread->result();
+                if (note >= 0)
+                  note_widget->set_pitch_detection_note (note);
+                pitch_detection_thread.reset();
+                detect_note_button->set_visible (true);
+                detect_note_progress_bar->set_visible (false);
+                detect_note_cancel_button->set_visible (false);
+              }
+          }
+        else
+          {
+            detect_note_timer->stop();
+          }
+      });
+
+    /*--- detect note: button ---*/
+    detect_note_button = new Button (this, "Detect Midi Note");
+    connect (detect_note_button->signal_clicked, [this, instrument]()
+      {
+        Sample *sample = instrument->sample (instrument->selected());
+        if (sample)
+          {
+            pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
+            detect_note_timer->start (0);
+            detect_note_button->set_visible (false);
+            detect_note_progress_bar->set_visible (true);
+            detect_note_cancel_button->set_visible (true);
+          }
+      });
+    /*--- detect note: cancel button ---*/
+    detect_note_cancel_button = new Button (this, "Cancel");
+    connect (detect_note_cancel_button->signal_clicked, [this]()
+      {
+        pitch_detection_thread.reset();
+        detect_note_button->set_visible (true);
+        detect_note_progress_bar->set_visible (false);
+        detect_note_cancel_button->set_visible (false);
+      });
+    detect_note_cancel_button->set_visible (false);
+
+    /*--- detect note: progress ---*/
+    detect_note_progress_bar = new ProgressBar (this);
+    detect_note_progress_bar->set_visible (false);
+
     grid.dx = 4;
-    grid.dy = height() / 8 - 5;
+    grid.dy = height() / 8 - 7;
 
     double xw = 12;
-    grid.add_widget (dbl, 0, 2, xw, 3);
-    grid.add_widget (dbl_txt, xw, 2, 20, 3);
     grid.add_widget (space, 0, 0, xw, 3);
     grid.add_widget (space_txt, xw, 0, 20, 3);
+    grid.add_widget (detect_note_button, 0, 3, 25, 3);
+    grid.add_widget (detect_note_progress_bar, 0, 3, 16, 3);
+    grid.add_widget (detect_note_cancel_button, 17, 3, 8, 3);
 
     grid.dx = width() / 8 / 2;
-    grid.dy = height() / 8 - 5;
+    grid.dy = height() / 8 - 7;
 
-    grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 5);
+    grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 7);
 
     grid.dx += 4;
 
@@ -294,6 +454,8 @@ public:
     grid.add_widget (left_txt, xw, 0, 20, 3);
     grid.add_widget (right, 0, 2, xw, 3);
     grid.add_widget (right_txt, xw, 2, 20, 3);
+    grid.add_widget (dbl, 0, 4, xw, 3);
+    grid.add_widget (dbl_txt, xw, 4, 20, 3);
 
     show();
   }

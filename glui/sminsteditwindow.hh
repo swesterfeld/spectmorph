@@ -50,6 +50,7 @@ class InstEditBackend
 
 public:
   InstEditBackend (SynthInterface *synth_interface);
+  ~InstEditBackend();
 
   void update_instrument (const Instrument *instrument, const std::string& reference);
   bool have_builder();
@@ -123,10 +124,10 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window = nullptr);
+  InstEditWindow (EventLoop& event_loop, const Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window = nullptr);
   ~InstEditWindow();
 
-  void clear_edit_instrument();
+  std::unique_ptr<Instrument> get_modified_instrument();
 
   bool auto_select() const;
   void set_auto_select (bool auto_select);

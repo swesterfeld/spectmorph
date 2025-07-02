@@ -83,6 +83,12 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
   synth_interface (synth_interface),
   cache_group (InstEncCache::the()->create_group())
 {
+  synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
+}
+
+InstEditBackend::~InstEditBackend()
+{
+  synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
 }
 
 void
@@ -138,13 +144,13 @@ InstEditBackend::on_timer()
 
 // ---------------- InstEditWindow ----------------
 //
-InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window) :
+InstEditWindow::InstEditWindow (EventLoop& event_loop, const Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window) :
   Window (event_loop, "SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
   m_backend (synth_interface),
   synth_interface (synth_interface)
 {
   assert (edit_instrument != nullptr);
-  instrument = edit_instrument;
+  instrument = edit_instrument->clone();
 
   /* make a backup to be able to revert */
   ZipWriter writer;
@@ -411,6 +417,9 @@ InstEditWindow::~InstEditWindow()
       delete inst_edit_volume;
       inst_edit_volume = nullptr;
     }
+
+  assert (instrument);
+  delete instrument;
 }
 
 void
@@ -480,9 +489,6 @@ InstEditWindow::load_sample_convert_from_stereo (const WavData& wav_data, const 
 void
 InstEditWindow::on_synth_notify_event (SynthNotifyEvent *notify_event)
 {
-  if (!instrument)
-    return;
-
   auto iev = dynamic_cast<InstEditVoiceEvent *> (notify_event);
   if (!iev)
     return;
@@ -556,9 +562,6 @@ InstEditWindow::on_synth_notify_event (SynthNotifyEvent *notify_event)
 void
 InstEditWindow::on_selected_sample_changed()
 {
-  if (!instrument) // during close we cannot access the instrument anymore
-    return;
-
   sample_combobox->clear();
   if (instrument->size() == 0)
     {
@@ -604,9 +607,6 @@ InstEditWindow::on_selected_sample_changed()
 void
 InstEditWindow::on_samples_changed()
 {
-  if (!instrument) // during close we cannot access the instrument anymore
-    return;
-
   on_selected_sample_changed();
   m_backend.update_instrument (instrument, reference);
 }
@@ -685,9 +685,6 @@ InstEditWindow::update_auto_checkboxes()
 void
 InstEditWindow::on_global_changed()
 {
-  if (!instrument) // during close we cannot access the instrument anymore
-    return;
-
   update_auto_checkboxes();
 
   name_line_edit->set_text (instrument->name());
@@ -1018,14 +1015,23 @@ InstEditWindow::set_playing (bool new_playing)
   play_button->set_icon (playing ? IconButton::STOP : IconButton::PLAY);
 }
 
-void
-InstEditWindow::clear_edit_instrument()
+/*
+ * Instrument ownership:
+ *   - in our constructor we make a deep copy of the instrument we want to edit
+ *     so we can modify it and use its signals without any interference
+ *   - in this function we return a deep copy of the edited instruments to
+ *     ensure that the caller can modify, keep or destroy the Instrument at any
+ *     time
+ *   - in our destructor, we delete our copy of the instrument
+ *
+ * This ensures that draw events or timer events that happen after the
+ * window has been closed (but before the InstEditWindow has been destroyed)
+ * can always access our own private version of the Instrument.
+ */
+std::unique_ptr<Instrument>
+InstEditWindow::get_modified_instrument()
 {
-  /* this is called if the window is closed: after the close event
-   * we should no longer access the instrument because it could be
-   * deleted already
-   */
-  instrument = nullptr;
+  return std::unique_ptr<Instrument> (instrument->clone());
 }
 
 void

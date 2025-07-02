@@ -90,23 +90,18 @@ void
 MorphWavSourceView::on_edit()
 {
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
-  synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
+  const Instrument *instrument = morph_wav_source->morph_plan()->project()->lookup_instrument (morph_wav_source).instrument.get();
 
-  Instrument *instrument = morph_wav_source->morph_plan()->project()->lookup_instrument (morph_wav_source).instrument.get();
-  edit_instrument.reset (instrument->clone());
-
-  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), edit_instrument.get(), synth_interface, window());
+  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
   inst_edit_window->show();
 
   // after this line, inst edit window is owned by parent window
   window()->set_popup_window (inst_edit_window);
 
-  inst_edit_window->set_close_callback ([this, synth_interface, inst_edit_window]()
+  inst_edit_window->set_close_callback ([this, inst_edit_window]()
     {
-      // not safe to access instrument pointer after window has been closed
-      inst_edit_window->clear_edit_instrument();
+      edit_instrument = inst_edit_window->get_modified_instrument();
       window()->set_popup_window (nullptr);
-      synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
       on_edit_close();
     });
 }
