@@ -379,6 +379,7 @@ public:
     Label *space_txt = new Label (this, "Play Selected Note");
     space->set_bold (true);
 
+    /*--- detect note: timer ---*/
     detect_note_timer = new Timer (this);
     connect (detect_note_timer->signal_timeout, [this] ()
       {
@@ -403,6 +404,7 @@ public:
           }
       });
 
+    /*--- detect note: button ---*/
     detect_note_button = new Button (this, "Detect Midi Note");
     connect (detect_note_button->signal_clicked, [this, instrument]()
       {
@@ -416,6 +418,7 @@ public:
             detect_note_cancel_button->set_visible (true);
           }
       });
+    /*--- detect note: cancel button ---*/
     detect_note_cancel_button = new Button (this, "Cancel");
     connect (detect_note_cancel_button->signal_clicked, [this]()
       {
@@ -426,7 +429,7 @@ public:
       });
     detect_note_cancel_button->set_visible (false);
 
-    /*--- Playback: progress ---*/
+    /*--- detect note: progress ---*/
     detect_note_progress_bar = new ProgressBar (this);
     detect_note_progress_bar->set_visible (false);
 
