@@ -10,15 +10,15 @@ using namespace SpectMorph;
 
 using std::vector;
 
+namespace
+{
+
 struct SineDetectPartial
 {
   double freq  = 0;
   double mag   = 0;
   double phase = 0;
 };
-
-namespace
-{
 
 class QInterpolator
 {
@@ -55,7 +55,7 @@ normalize_phase (double phase)
 
 }
 
-vector<SineDetectPartial>
+static vector<SineDetectPartial>
 sine_detect (double mix_freq, const vector<float>& signal)
 {
   assert (signal.size() % 2 != 0);
