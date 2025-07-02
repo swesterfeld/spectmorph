@@ -342,7 +342,7 @@ public:
 class InstEditNote : public Window
 {
   NoteWidget *note_widget = nullptr;
-  Timer *timer = nullptr;
+  Timer *detect_note_timer = nullptr;
   ProgressBar *detect_note_progress_bar = nullptr;
   Button *detect_note_button = nullptr;
   Button *detect_note_cancel_button = nullptr;
@@ -379,9 +379,8 @@ public:
     Label *space_txt = new Label (this, "Play Selected Note");
     space->set_bold (true);
 
-    timer = new Timer (this);
-    timer->start (0);
-    connect (timer->signal_timeout, [this] ()
+    detect_note_timer = new Timer (this);
+    connect (detect_note_timer->signal_timeout, [this] ()
       {
         if (pitch_detection_thread)
           {
@@ -398,6 +397,10 @@ public:
                 detect_note_cancel_button->set_visible (false);
               }
           }
+        else
+          {
+            detect_note_timer->stop();
+          }
       });
 
     detect_note_button = new Button (this, "Detect Midi Note");
@@ -407,6 +410,7 @@ public:
         if (sample)
           {
             pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
+            detect_note_timer->start (0);
             detect_note_button->set_visible (false);
             detect_note_progress_bar->set_visible (true);
             detect_note_cancel_button->set_visible (true);
