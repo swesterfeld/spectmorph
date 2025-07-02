@@ -60,6 +60,7 @@ testcurve
 testpsola
 testroundperf
 testceventlock
+testpitchdetect
 test*.exe
 .libs
 .deps
