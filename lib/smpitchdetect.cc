@@ -56,9 +56,10 @@ normalize_phase (double phase)
 }
 
 static vector<SineDetectPartial>
-sine_detect (double mix_freq, const vector<float>& signal)
+sine_detect (double mix_freq, const vector<float>& signal, const vector<float>& window)
 {
   assert (signal.size() % 2 != 0);
+  assert (signal.size() == window.size());
 
   /* possible improvements for this code
    *
@@ -76,9 +77,8 @@ sine_detect (double mix_freq, const vector<float>& signal)
   float window_weight = 0;
   for (size_t i = 0; i < signal.size(); i++)
     {
-      const float w = window_cos ((i - signal.size() * 0.5) / (signal.size() * 0.5));
-      window_weight += w;
-      padded_signal.push_back (signal[i] * w);
+      window_weight += window[i];
+      padded_signal.push_back (signal[i] * window[i]);
     }
   padded_signal.resize (padded_length);
 
@@ -152,8 +152,8 @@ sine_detect (double mix_freq, const vector<float>& signal)
  * Maher, R.C., & Beauchamp, J.W. (1994).
  * "Fundamental frequency estimation of musical signals using a two-way mismatch procedure."
  */
-std::pair<double, double>
-static pitch_detect_twm (const vector<SineDetectPartial>& partials)
+static std::pair<double, double>
+pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
   if (partials.size() == 0)
     return std::make_pair (-1.0, -1.0);
@@ -260,7 +260,7 @@ static pitch_detect_twm (const vector<SineDetectPartial>& partials)
 static double
 note_to_freq (double note)
 {
-  return 440 * exp (log (2) * (note - 69) / 12.0);
+  return 440 * exp2 ((note - 69) / 12.0);
 }
 
 static double
@@ -297,7 +297,7 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + frame_size);
 
-          auto partials = sine_detect (wav_data.mix_freq(), single_frame);
+          auto partials = sine_detect (wav_data.mix_freq(), single_frame, window);
           partials_vec.push_back (partials);
 
           vector<float> out_frame (single_frame.size());
