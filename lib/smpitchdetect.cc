@@ -139,7 +139,6 @@ sine_detect (double mix_freq, const vector<float>& signal)
               partial.phase = normalize_phase (phase);
 
               partials.push_back (partial);
-              // printf ("%f %f %f\n", (x + x_max) * mix_freq / padded_length, peak_mag * (2 / window_weight), normalized_peak_width);
             }
         }
     }
@@ -159,14 +158,16 @@ static pitch_detect_twm (const vector<SineDetectPartial>& partials)
   if (partials.size() == 0)
     return std::make_pair (-1.0, -1.0);
 
-  double A_max = 0;
+  double mag_max = 0;
   double f_max = 0;
   double best_partial_f = 0;
   for (auto p : partials)
     {
-      if (A_max < p.mag)
-        best_partial_f = p.freq;
-      A_max = std::max (A_max, p.mag);
+      if (mag_max < p.mag)
+        {
+          best_partial_f = p.freq;
+          mag_max        = p.mag;
+        }
       f_max = std::max (f_max, p.freq);
     }
 
@@ -193,7 +194,7 @@ static pitch_detect_twm (const vector<SineDetectPartial>& partials)
             }
           double diff_f_pow = best_diff * pow (f_harm, -p);
 
-          error_p2m += diff_f_pow + partials[best_index].mag / A_max * (q * diff_f_pow - r);
+          error_p2m += diff_f_pow + partials[best_index].mag / mag_max * (q * diff_f_pow - r);
         }
       double error_m2p = 0;
 
@@ -204,7 +205,7 @@ static pitch_detect_twm (const vector<SineDetectPartial>& partials)
           double freq_distance = std::abs (partials[n].freq - n_harmonic * freq);
           double diff_f_pow = freq_distance * pow (partials[n].freq, -p);
 
-          error_m2p += diff_f_pow + partials[n].mag / A_max * (q * diff_f_pow - r);
+          error_m2p += diff_f_pow + partials[n].mag / mag_max * (q * diff_f_pow - r);
         }
       double error = error_p2m / n_p2m_freqs + error_m2p * rho / n_m2p_freqs;
       return error;
@@ -268,35 +269,34 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
   assert (wav_data.n_channels() == 1);
 
   double best_snr = 0;
-  vector<double> freqs;
   vector<vector<SineDetectPartial>> best_partials_vec;
 
-  vector<int> window_size_ms { 5, 10, 20, 40, 80, 160 };
-  for (size_t ws_index = 0; ws_index < window_size_ms.size(); ws_index++)
+  vector<int> frame_size_ms { 5, 10, 20, 40, 80, 160 };
+  for (size_t fs_index = 0; fs_index < frame_size_ms.size(); fs_index++)
     {
-      int ssz = window_size_ms[ws_index] * 0.001 * wav_data.mix_freq();
-      if (ssz % 2 == 0)
-        ssz += 1;
+      int frame_size = frame_size_ms[fs_index] * 0.001 * wav_data.mix_freq();
+      if (frame_size % 2 == 0)
+        frame_size += 1;
 
       double snr_signal_power = 0;
       double snr_delta_power = 0;
       vector<vector<SineDetectPartial>> partials_vec;
 
-      vector<float> window (ssz);
+      vector<float> window (frame_size);
       for (size_t i = 0; i < window.size(); i++)
         {
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
 
       size_t progress_frames_total = 0;
-      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
+      for (size_t offset = 0; offset + frame_size < wav_data.samples().size(); offset += frame_size / 4)
         progress_frames_total++;
 
       size_t progress_frames_done = 0;
-      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += ssz / 4)
+      for (size_t offset = 0; offset + frame_size < wav_data.samples().size(); offset += frame_size / 4)
         {
-          vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
-          //printf ("%zd\n", offset);
+          vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + frame_size);
+
           auto partials = sine_detect (wav_data.mix_freq(), single_frame);
           partials_vec.push_back (partials);
 
@@ -322,7 +322,7 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
               snr_delta_power += delta * delta;
             }
 
-          if (kill_progress_function && kill_progress_function ((ws_index + double (progress_frames_done++) / progress_frames_total) * 90.0 / window_size_ms.size()))
+          if (kill_progress_function && kill_progress_function ((fs_index + double (progress_frames_done++) / progress_frames_total) * 90.0 / frame_size_ms.size()))
             return -1;
         }
       if (progress_frames_total > 0)
@@ -335,28 +335,29 @@ detect_pitch_mono (const WavData& wav_data, std::function<bool (double)> kill_pr
             }
         }
     }
+  vector<double> freqs;
   vector<double> mag_sums;
   for (size_t bpv_index = 0; bpv_index < best_partials_vec.size(); bpv_index++)
     {
       const auto& partials = best_partials_vec[bpv_index];
 
-      double A_max = 0;
-      double A_sum = 0;
+      double mag_max = 0;
+      double mag_sum = 0;
       for (auto p : partials)
         {
-          A_max = std::max (p.mag, A_max);
-          A_sum += p.mag;
+          mag_max = std::max (p.mag, mag_max);
+          mag_sum += p.mag;
         }
       vector<SineDetectPartial> strong_partials;
       for (auto p : partials)
-        if (p.mag / A_max > 0.01)
+        if (p.mag / mag_max > 0.01)
           strong_partials.push_back (p);
 
       auto [twm_freq, twm_err] = pitch_detect_twm (strong_partials);
       if (twm_freq > 0)
         {
           freqs.push_back (twm_freq);
-          mag_sums.push_back (A_sum);
+          mag_sums.push_back (mag_sum);
         }
       if (kill_progress_function && kill_progress_function (90 + 10.0 * bpv_index / best_partials_vec.size()))
         return -1;
