@@ -149,6 +149,10 @@ sine_detect (double mix_freq, const vector<float>& signal)
   return partials;
 }
 
+/* Fundamental frequency estimation method adapted from:
+ * Maher, R.C., & Beauchamp, J.W. (1994).
+ * "Fundamental frequency estimation of musical signals using a two-way mismatch procedure."
+ */
 std::pair<double, double>
 static pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
