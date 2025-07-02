@@ -345,6 +345,7 @@ class InstEditNote : public Window
   Timer *timer = nullptr;
   ProgressBar *detect_note_progress_bar = nullptr;
   Button *detect_note_button = nullptr;
+  Button *detect_note_cancel_button = nullptr;
   std::unique_ptr<PitchDetectionThread> pitch_detection_thread;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
@@ -394,6 +395,7 @@ public:
                 pitch_detection_thread.reset();
                 detect_note_button->set_visible (true);
                 detect_note_progress_bar->set_visible (false);
+                detect_note_cancel_button->set_visible (false);
               }
           }
       });
@@ -407,8 +409,19 @@ public:
             pitch_detection_thread = std::make_unique<PitchDetectionThread> (this, instrument, sample);
             detect_note_button->set_visible (false);
             detect_note_progress_bar->set_visible (true);
+            detect_note_cancel_button->set_visible (true);
           }
       });
+    detect_note_cancel_button = new Button (this, "Cancel");
+    connect (detect_note_cancel_button->signal_clicked, [this]()
+      {
+        pitch_detection_thread.reset();
+        detect_note_button->set_visible (true);
+        detect_note_progress_bar->set_visible (false);
+        detect_note_cancel_button->set_visible (false);
+      });
+    detect_note_cancel_button->set_visible (false);
+
     /*--- Playback: progress ---*/
     detect_note_progress_bar = new ProgressBar (this);
     detect_note_progress_bar->set_visible (false);
@@ -420,7 +433,8 @@ public:
     grid.add_widget (space, 0, 0, xw, 3);
     grid.add_widget (space_txt, xw, 0, 20, 3);
     grid.add_widget (detect_note_button, 0, 3, 25, 3);
-    grid.add_widget (detect_note_progress_bar, 0, 3, 25, 3);
+    grid.add_widget (detect_note_progress_bar, 0, 3, 16, 3);
+    grid.add_widget (detect_note_cancel_button, 17, 3, 8, 3);
 
     grid.dx = width() / 8 / 2;
     grid.dy = height() / 8 - 7;
