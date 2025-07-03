@@ -10,8 +10,8 @@ cp -av /data/templates /data/fonts "$SPECTMORPH_DIR"
 
 # kxstudio repos for lv2lint
 sudo apt-get install -y wget
-wget https://launchpad.net/~kxstudio-debian/+archive/kxstudio/+files/kxstudio-repos_11.1.0_all.deb
-sudo dpkg -i kxstudio-repos_11.1.0_all.deb
+wget https://launchpad.net/~kxstudio-debian/+archive/kxstudio/+files/kxstudio-repos_11.2.0_all.deb
+sudo dpkg -i kxstudio-repos_11.2.0_all.deb
 sudo apt-get update
 sudo apt-get install -y lv2lint
 
