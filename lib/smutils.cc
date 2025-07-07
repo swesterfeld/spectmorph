@@ -6,6 +6,7 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <charconv>
 
 #include <assert.h>
 #include <stdarg.h>
@@ -572,6 +573,19 @@ dir_exists (const string& dirname)
       return S_ISDIR (st.st_mode);
     }
   return false;
+}
+
+bool
+sm_try_atoi (const char *str, int& i)
+{
+  if (!str || *str == '\0')
+    return false;
+
+  auto [ptr, ec] = std::from_chars (str, str + strlen (str), i);
+  if (ec != std::errc() || *ptr != '\0')
+    return false;
+
+  return true;
 }
 
 double
