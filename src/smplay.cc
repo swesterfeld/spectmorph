@@ -422,9 +422,10 @@ main (int argc, char **argv)
           pos += todo;
         }
       ao_close (play_device);
-#endif
+#else
       fprintf (stderr, "error: %s was compiled without libao support (use --export <filename>)\n", options.program_name.c_str());
       exit (1);
+#endif
     }
   else /* export wav */
     {
