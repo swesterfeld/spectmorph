@@ -121,7 +121,13 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
-          freq = freq_from_note (atoi (opt_arg));
+          int note;
+          if (!sm_try_atoi (opt_arg, note) || note < 0 || note > 127)
+            {
+              fprintf (stderr, "%s: invalid midi note '%s', should be integer between 0 and 127\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
+          freq = freq_from_note (note);
         }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
