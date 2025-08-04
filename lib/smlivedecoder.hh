@@ -30,7 +30,7 @@ class LiveDecoder
     float mag;
     uint  phase;
   };
-  std::vector<PartialState> pstate[2], *last_pstate;
+  std::vector<PartialState> pstate[2], *last_pstate = &pstate[0];
 
   WavSet             *smset;
   Audio              *audio;
