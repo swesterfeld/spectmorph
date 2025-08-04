@@ -118,7 +118,7 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
     assert (out_block.freqs.size() == mags_count);
     for (size_t i = 0; i < mags_count; i++)
       mags[i] *= norm;
-    uint16_t imags[mags_count];
+    uint16_t imags[mags_count + AVOID_ARRAY_UB];
     sm_factor2idbs (mags, mags_count, imags);
     out_block.mags.assign (imags, imags + mags_count);
   };
@@ -127,7 +127,7 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
     {
       out_block.freqs.set_capacity (in_block.freqs.size());
       const float e_tune_factor = 1 / in_block.env_f0;
-      float mags[in_block.freqs.size()];
+      float mags[in_block.freqs.size() + AVOID_ARRAY_UB];
       size_t count = 0;
 
       for (size_t i = 0; i < in_block.freqs.size(); i++)
