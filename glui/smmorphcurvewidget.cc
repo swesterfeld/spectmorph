@@ -484,7 +484,12 @@ MorphCurveWidget::find_closest_segment_index (const Point& p)
     {
       Point curve_p = curve_point_to_xy (m_curve.points[i]);
       if (curve_p.x() < p.x())
-        index = i;
+        {
+          if (i + 1 < m_curve.points.size())
+            index = i;
+          else
+            index = -1; // no valid segment: p is not between two curve points
+        }
     }
   return index;
 }
