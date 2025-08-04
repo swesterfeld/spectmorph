@@ -41,7 +41,7 @@ sm_idb2factor_slow (uint16_t idb)
 void
 sm_factor2idbs (float *factors, uint n_factors, uint16_t *out)
 {
-  float tmp[n_factors];
+  float tmp[n_factors + AVOID_ARRAY_UB];
   for (uint i = 0; i < n_factors; i++)
     tmp[i] = std::max (factors[i], 1e-25f);
 
@@ -66,7 +66,7 @@ sm_freq2ifreq (float freq)
 void
 sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out)
 {
-  float tmp[n_freqs];
+  float tmp[n_freqs + AVOID_ARRAY_UB];
   for (uint i = 0; i < n_freqs; i++)
     tmp[i] = fast_log2 (freqs[i]);   // compiler should auto vectorize this loop
 
