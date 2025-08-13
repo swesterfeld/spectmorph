@@ -402,6 +402,10 @@ MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
   AM_CFLAGS="$AM_CFLAGS -Wall"
   AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
 ])
+MC_PROG_CC_SUPPORTS_OPTION([-Wno-vla-cxx-extension], [
+  AM_CFLAGS="$AM_CFLAGS -Wno-vla-cxx-extension"
+  AM_CXXFLAGS="$AM_CXXFLAGS -Wno-vla-cxx-extension"
+])
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
   AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
