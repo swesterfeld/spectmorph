@@ -261,6 +261,17 @@ LineEdit::x_to_cursor_pos (double x)
           min_dist = dist;
         }
     }
+  if (pos > int (text32.size()))
+    {
+      /* HACK: (this code is probably never triggered in normal usage)
+       *  - text32 gets updated in other functions
+       *  - prefix_x vector gets updated during draw (a tiny bit later)
+       *
+       * We avoid returning a position past the end of the text, just in case
+       * prefix_x has not been updated, but text32 has been shrinked
+       */
+      pos = text32.size();
+    }
   return pos;
 }
 
