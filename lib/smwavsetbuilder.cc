@@ -213,7 +213,8 @@ WavSetBuilder::apply_auto_volume()
         {
           double energy = AudioTool::compute_energy (audio);
 
-          AudioTool::normalize_energy (energy, audio);
+          if (energy != 0) // avoid UB (energy == 0 would multiply everything with inf)
+            AudioTool::normalize_energy (energy, audio);
         }
       if (auto_volume.method == Instrument::AutoVolume::GLOBAL)
         {
