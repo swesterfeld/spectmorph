@@ -56,6 +56,7 @@ private:
 
 public:
   Sample (Instrument *inst, const WavData& wav_data);
+  void    set_markers (const std::map<MarkerType, double>& markers);
   void    set_marker (MarkerType marker_type, double value);
   double  get_marker (MarkerType marker_type) const;
 
