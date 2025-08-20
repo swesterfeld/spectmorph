@@ -7,6 +7,7 @@
 - allow unison audio tests with static phase reset
 - experiment with smooth tuning for formant correction to reduce artifacts
 - try using smooth (1/3 octave?) formant envelopes to reduce artifacts
+- possibly fix -Wexit-time-destructors -Wglobal-constructors clang++ warnings
 
 NEXT RELEASE:
 - [maybe] support formant correction for Source
