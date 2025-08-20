@@ -200,6 +200,7 @@ Error read_dir (const std::string& dirname, std::vector<std::string>& files);
 bool file_exists (const std::string& filename);
 bool dir_exists (const std::string& dirname);
 
+bool sm_try_atoi (const char *str, int& i);
 double sm_atof (const char *str);  // always use . as decimal seperator
 double sm_atof_any (const char *str);  // allow . or locale as decimal separator
 

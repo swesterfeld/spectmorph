@@ -82,11 +82,19 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
 	{
-	  rate = atoi (opt_arg);
+          if (!sm_try_atoi (opt_arg, rate) || rate < 8000)
+            {
+              fprintf (stderr, "%s: invalid rate '%s', should be integer >= 8000\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
 	}
       else if (check_arg (argc, argv, &i, "--bits", &opt_arg))
         {
-          bits = atoi (opt_arg);
+          if (!sm_try_atoi (opt_arg, bits) || bits < 8)
+            {
+              fprintf (stderr, "%s: invalid bit depth '%s', should be integer >= 8\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
         }
       else if (check_arg (argc, argv, &i, "--export", &opt_arg) || check_arg (argc, argv, &i, "-x", &opt_arg))
         {
@@ -94,7 +102,11 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
-          midi_note = atoi (opt_arg);
+          if (!sm_try_atoi (opt_arg, midi_note) || midi_note < 0 || midi_note > 127)
+            {
+              fprintf (stderr, "%s: invalid midi note '%s', should be integer between 0 and 127\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
         }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
@@ -422,9 +434,10 @@ main (int argc, char **argv)
           pos += todo;
         }
       ao_close (play_device);
-#endif
+#else
       fprintf (stderr, "error: %s was compiled without libao support (use --export <filename>)\n", options.program_name.c_str());
       exit (1);
+#endif
     }
   else /* export wav */
     {

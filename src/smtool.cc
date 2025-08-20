@@ -474,7 +474,11 @@ public:
   {
     if (args.size() == 1)
       {
-        frame = atoi (args[0].c_str());
+        if (!sm_try_atoi (args[0].c_str(), frame) || frame < 0)
+          {
+            fprintf (stderr, "invalid frame number '%s'\n", args[0].c_str());
+            return false;
+          }
         return true;
       }
     return false;
@@ -505,7 +509,11 @@ public:
   {
     if (args.size() == 1)
       {
-        frame = atoi (args[0].c_str());
+        if (!sm_try_atoi (args[0].c_str(), frame) || frame < 0)
+          {
+            fprintf (stderr, "invalid frame number '%s'\n", args[0].c_str());
+            return false;
+          }
         return true;
       }
     return false;
@@ -543,7 +551,11 @@ public:
   {
     if (args.size() == 1)
       {
-        frame = atoi (args[0].c_str());
+        if (!sm_try_atoi (args[0].c_str(), frame) || frame < 0)
+          {
+            fprintf (stderr, "invalid frame number '%s'\n", args[0].c_str());
+            return false;
+          }
         return true;
       }
     return false;
@@ -711,7 +723,11 @@ public:
   {
     if (args.size() == 1)
       {
-        frame = atoi (args[0].c_str());
+        if (!sm_try_atoi (args[0].c_str(), frame) || frame < 0)
+          {
+            fprintf (stderr, "invalid frame number '%s'\n", args[0].c_str());
+            return false;
+          }
         return true;
       }
     return false;
@@ -902,8 +918,11 @@ public:
   {
     if (args.size() == 1)
       {
-        fundamental_est_n = atoi (args[0].c_str());
-        assert (fundamental_est_n >= 1 && fundamental_est_n <= 3);
+        if (!sm_try_atoi (args[0].c_str(), fundamental_est_n) || fundamental_est_n < 1 || fundamental_est_n > 3)
+          {
+            fprintf (stderr, "invalid number of partials '%s', should be integer between 1 and 3\n", args[0].c_str());
+            return false;
+          }
         return true;
       }
     return false;
@@ -994,8 +1013,11 @@ public:
   {
     if (args.size() == 3)
       {
-        fundamental_est_n = atoi (args[0].c_str());
-        assert (fundamental_est_n >= 1 && fundamental_est_n <= 3);
+        if (!sm_try_atoi (args[0].c_str(), fundamental_est_n) || fundamental_est_n < 1 || fundamental_est_n > 3)
+          {
+            fprintf (stderr, "invalid number of partials '%s', should be integer between 1 and 3\n", args[0].c_str());
+            return false;
+          }
         smooth_ms = sm_atof (args[1].c_str());
         assert (smooth_ms > 10 && smooth_ms < 5000);
         smooth_percent = sm_atof (args[2].c_str());
@@ -1194,7 +1216,11 @@ public:
   {
     if (args.size() == 2)
       {
-        note = atoi (args[0].c_str());
+        if (!sm_try_atoi (args[0].c_str(), note) || note < 0 || note > 127)
+          {
+            fprintf (stderr, "invalid note '%s', should be integer between 0 and 127\n", args[0].c_str());
+            return false;
+          }
         filename = args[1];
         return true;
       }

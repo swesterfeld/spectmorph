@@ -43,6 +43,7 @@ using SpectMorph::Main;
 
 using SpectMorph::string_printf;
 using SpectMorph::sm_round_positive;
+using SpectMorph::sm_try_atoi;
 
 using std::string;
 using std::vector;
@@ -567,7 +568,11 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
-          midi_note = atoi (opt_arg);
+          if (!sm_try_atoi (opt_arg, midi_note) || midi_note < 0 || midi_note > 127)
+            {
+              fprintf (stderr, "%s: invalid midi note '%s', should be integer between 0 and 127\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
         }
       else if (check_arg (argc, argv, &i, "-j", &opt_arg))
         {
