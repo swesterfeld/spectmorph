@@ -380,6 +380,32 @@ AM_CXXFLAGS=""
 # need c++17 mode
 AX_CXX_COMPILE_STDCXX(17, ext)
 
+# check compiler
+AC_LANG_PUSH([C++])
+
+AC_MSG_CHECKING([whether the C++ compiler is Clang])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]],
+[[
+#ifndef __clang__
+#error "Not clang"
+#endif
+]])],
+[compiler_is_clang=yes], [compiler_is_clang=no])
+AC_MSG_RESULT([$compiler_is_clang])
+
+AC_MSG_CHECKING([whether the C++ compiler is GCC])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]],
+[[
+/* clang defines __GNUC__ for compatibility reasons */
+#if !defined(__GNUC__) || defined(__clang__)
+#error "Not GCC"
+#endif
+]])],
+[compiler_is_gcc=yes], [compiler_is_gcc=no])
+AC_MSG_RESULT([$compiler_is_gcc])
+
+AC_LANG_POP([C++])
+
 # == Debug flags ==
 AC_ARG_ENABLE(debug, [  --enable-debug=[no/min/yes] turn on debugging, default=minimum],,enable_debug=min)
 case "_$enable_debug" in
@@ -402,10 +428,12 @@ MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
   AM_CFLAGS="$AM_CFLAGS -Wall"
   AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
 ])
-MC_PROG_CC_SUPPORTS_OPTION([-Wno-vla-cxx-extension], [
+
+if test "x$compiler_is_clang" = "xyes"; then
   AM_CFLAGS="$AM_CFLAGS -Wno-vla-cxx-extension"
   AM_CXXFLAGS="$AM_CXXFLAGS -Wno-vla-cxx-extension"
-])
+fi
+
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
   AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"

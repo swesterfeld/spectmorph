@@ -55,6 +55,19 @@ Sample::set_marker (MarkerType marker_type, double value)
   instrument->marker_changed();
 }
 
+void
+Sample::set_markers (const std::map<MarkerType, double>& markers)
+{
+  /* sometimes we need to atomically update markers in order to maintain a sensible state
+   *
+   * for instance we want loop_end >= loop_start, so updating loop_end and loop_start
+   * with two set operations would sometimes leave the markers in an inconsistent state
+   */
+  for (auto [marker_type, value] : markers)
+    marker_map[marker_type] = value;
+  instrument->marker_changed();
+}
+
 double
 Sample::get_marker (MarkerType marker_type) const
 {

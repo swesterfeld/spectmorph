@@ -315,12 +315,13 @@ public:
         double x_ms = std::clamp (event.x / width() * sample_len_ms, 0.0, sample_len_ms);
 
         update_marker (selected_marker); // "undraw"
-                                         //
-        if (selected_marker == MARKER_LOOP_START) // don't allow moving loop start to a point before the start marker
-          x_ms = std::max (x_ms, m_sample->get_marker (MARKER_CLIP_START));
-        m_sample->set_marker (selected_marker, x_ms);
 
-        update_marker (selected_marker); // "draw"
+        // don't allow moving loop start/end to a point before the start marker
+        if (selected_marker == MARKER_LOOP_START || selected_marker == MARKER_LOOP_END)
+          x_ms = std::max (x_ms, m_sample->get_marker (MARKER_CLIP_START));
+
+        std::map<MarkerType, double> new_markers;
+        new_markers[selected_marker] = x_ms;
 
         /* enforce ordering constraints */
         std::vector<MarkerType> left, right;
@@ -328,11 +329,15 @@ public:
 
         for (auto l : left)
           if (m_sample->get_marker (l) > x_ms)
-            m_sample->set_marker (l, x_ms);
+            new_markers[l] = x_ms;
 
         for (auto r : right)
           if (m_sample->get_marker (r) < x_ms)
-            m_sample->set_marker (r, x_ms);
+            new_markers[r] = x_ms;
+
+        m_sample->set_markers (new_markers);
+
+        update_marker (selected_marker); // "draw"
       }
     else
       {
