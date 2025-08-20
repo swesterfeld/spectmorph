@@ -578,6 +578,8 @@ dir_exists (const string& dirname)
 bool
 sm_try_atoi (const char *str, int& i)
 {
+  i = 0;
+
   if (!str || *str == '\0')
     return false;
 
