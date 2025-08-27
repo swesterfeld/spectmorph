@@ -499,6 +499,17 @@ AC_ARG_ENABLE([ubsan], [AS_HELP_STRING([--enable-ubsan], [build using undefined 
 ])
 dnl -------------------------------------------------------------------------
 
+dnl ------------------------- realtime sanitizer ----------------------------
+AC_ARG_ENABLE([rtsan], [AS_HELP_STRING([--enable-rtsan], [build using realtime sanitizer])],
+[
+  CFLAGS="$CFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
+  CXXFLAGS="$CXXFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
+],
+[
+  enable_rtsan=no
+])
+dnl -------------------------------------------------------------------------
+
 dnl -------------------------------------------------------------------------
 INSTRUMENTS_ARCHIVE=`cd $srcdir && echo $PWD`/data/spectmorph-instruments-$VERSION.tar.xz
 AC_SUBST(INSTRUMENTS_ARCHIVE)
@@ -576,6 +587,10 @@ fi
 
 if test "x$enable_ubsan" != "xno"; then
   echo "  UB Sanitizer . . . . . .: $enable_ubsan"
+fi
+
+if test "x$enable_rtsan" != "xno"; then
+  echo "  RT Sanitizer . . . . . .: $enable_rtsan"
 fi
 
 echo "  Install prefix . . . . .: $prefix"
