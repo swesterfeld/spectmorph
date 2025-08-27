@@ -28,7 +28,7 @@ protected:
 public:
   JackSynth (jack_client_t *client, Project *project);
 
-  int  process (jack_nframes_t nframes);
+  int  process (jack_nframes_t nframes) noexcept SM_CLANG_NONBLOCKING;
 };
 
 }
