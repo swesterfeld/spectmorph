@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(GLIB_CFLAGS) $(AO_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/lib
+AM_CXXFLAGS += $(GLIB_CFLAGS) $(AO_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/lib
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
