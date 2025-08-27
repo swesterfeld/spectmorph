@@ -502,8 +502,8 @@ dnl -------------------------------------------------------------------------
 dnl ------------------------- realtime sanitizer ----------------------------
 AC_ARG_ENABLE([rtsan], [AS_HELP_STRING([--enable-rtsan], [build using realtime sanitizer])],
 [
-  CFLAGS="$CFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
-  CXXFLAGS="$CXXFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
+  CFLAGS="$CFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline -DSM_RTSAN"
+  CXXFLAGS="$CXXFLAGS -fsanitize=realtime -fno-omit-frame-pointer -fstack-protector-all -fno-inline -DSM_RTSAN"
 ],
 [
   enable_rtsan=no
