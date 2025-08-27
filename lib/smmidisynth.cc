@@ -394,7 +394,7 @@ MidiSynth::process_pitch_bend (int channel, float value)
 }
 
 void
-MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity)
+MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity) noexcept
 {
   Event event;
   event.type = EVENT_NOTE_ON;
@@ -407,7 +407,7 @@ MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, fl
 }
 
 void
-MidiSynth::add_note_off_event (uint offset, int channel, int key)
+MidiSynth::add_note_off_event (uint offset, int channel, int key) noexcept
 {
   Event event;
   event.type = EVENT_NOTE_OFF;
@@ -418,7 +418,7 @@ MidiSynth::add_note_off_event (uint offset, int channel, int key)
 }
 
 void
-MidiSynth::add_control_input_event (uint offset, int control_input, float value)
+MidiSynth::add_control_input_event (uint offset, int control_input, float value) noexcept
 {
   Event event;
   event.type = EVENT_CONTROL_VALUE;
@@ -429,7 +429,7 @@ MidiSynth::add_control_input_event (uint offset, int control_input, float value)
 }
 
 void
-MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key)
+MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key) noexcept
 {
   Event event;
   event.type = EVENT_PITCH_EXPRESSION;
@@ -441,7 +441,7 @@ MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, in
 }
 
 void
-MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key)
+MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key) noexcept
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
@@ -458,7 +458,7 @@ MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, i
 }
 
 void
-MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
+MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data) noexcept
 {
   unsigned char status = midi_data[0] & 0xf0;
   const int channel  = midi_data[0] & 0xf;
@@ -586,7 +586,40 @@ MidiSynth::process_audio (float *output, size_t n_values)
 }
 
 void
-MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks)
+MidiSynth::sort_events_stable()
+{
+  // fast path: return if events are already sorted properly
+  if (std::is_sorted (events.begin(), events.end(),
+      [] (const Event& a, const Event& b)
+        { return a.offset < b.offset; }
+      ))
+    return;
+
+  MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
+
+  /*
+   * we don't want to use std::stable_sort, because it allocates memory
+   *
+   * std::sort doesn't allocate extra memory, but is not stable, so we use an
+   * extra field to preserve the relative order of events with the same
+   * timestamp
+   */
+  for (size_t i = 0; i < events.size(); i++)
+    events[i].tmp_sort_index = i;
+
+  auto event_cmp = [] (const Event& a, const Event& b)
+    {
+      if (a.offset == b.offset)
+        return a.tmp_sort_index < b.tmp_sort_index;
+      else
+        return a.offset < b.offset;
+    };
+  std::sort (events.begin(), events.end(), event_cmp);
+}
+
+
+void
+MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks) noexcept
 {
   if (inst_edit) // inst edit mode? -> delegate
     {
@@ -616,16 +649,11 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
 
   morph_plan_synth.update_shared_state (m_time_info_gen.time_info (0));
 
-  auto offset_cmp = [] (const Event& a, const Event& b) { return a.offset < b.offset; };
-  if (!std::is_sorted (events.begin(), events.end(), offset_cmp))
-    {
-      /* Hosts should provide midi events sorted by offset. But if the events
-       * are not sorted by offset, we do it here to avoid problems in the event
-       * handling code below.
-       */
-      MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
-      std::stable_sort (events.begin(), events.end(), offset_cmp);
-    }
+  /* Hosts should provide midi events sorted by offset. But if the events
+   * are not sorted by offset, we do it here to avoid problems in the event
+   * handling code below.
+   */
+  sort_events_stable();
 
   for (const auto& event : events)
     {
@@ -711,7 +739,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
 }
 
 void
-MidiSynth::set_control_input (int i, float value)
+MidiSynth::set_control_input (int i, float value) noexcept
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
@@ -719,13 +747,13 @@ MidiSynth::set_control_input (int i, float value)
 }
 
 void
-MidiSynth::set_tempo (double tempo)
+MidiSynth::set_tempo (double tempo) noexcept
 {
   m_tempo = tempo;
 }
 
 void
-MidiSynth::set_ppq_pos (double ppq_pos)
+MidiSynth::set_ppq_pos (double ppq_pos) noexcept
 {
   m_ppq_pos = ppq_pos;
 }

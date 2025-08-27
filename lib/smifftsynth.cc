@@ -84,6 +84,8 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
 
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
+  fft_plan = FFT::plan_fftsr_destructive_float (block_size); // not RT-safe due to locking
+
   freq256_factor = 1 / mix_freq * block_size * zero_padding;
   freq256_to_qfreq = mix_freq / 256.0 / block_size;
   mag_norm = 0.5 / block_size;
@@ -99,7 +101,7 @@ void
 IFFTSynth::get_samples (float      *samples,
                         OutputMode  output_mode)
 {
-  FFT::fftsr_destructive_float (block_size, fft_in, fft_out);
+  FFT::execute_fftsr_destructive_float (block_size, fft_in, fft_out, fft_plan);
 
   if (win_scale)
     Block::mul (block_size, fft_out, win_scale);

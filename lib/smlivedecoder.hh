@@ -38,6 +38,7 @@ class LiveDecoder
   size_t              block_size;
   IFFTSynth           ifft_synth;
   NoiseDecoder        noise_decoder;
+  const FFT::Plan    *fft_plan;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
   RTMemoryArea       *rt_memory_area = nullptr;

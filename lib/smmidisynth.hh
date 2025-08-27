@@ -77,6 +77,7 @@ private:
   {
     EventType         type;
     unsigned int      offset;
+    unsigned int      tmp_sort_index; // temp order for stable sort
 
     union {
       NoteEvent       note;       // EVENT_NOTE_ON, EVENT_NOTE_OFF
@@ -186,23 +187,24 @@ private:
   void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
+  void sort_events_stable();
 
 public:
   MidiSynth (double mix_freq, size_t n_voices);
 
-  void add_midi_event (size_t offset, const unsigned char *midi_data);
-  void process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks = nullptr);
+  void add_midi_event (size_t offset, const unsigned char *midi_data) noexcept SM_CLANG_NONBLOCKING;
+  void process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks = nullptr) noexcept SM_CLANG_NONBLOCKING;
 
-  void add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity);
-  void add_note_off_event (uint offset, int channel, int key);
-  void add_control_input_event (uint offset, int i, float value);
-  void add_pitch_expression_event (uint offset, float value, int channel, int key);
-  void add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key);
+  void add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity) noexcept SM_CLANG_NONBLOCKING;
+  void add_note_off_event (uint offset, int channel, int key) noexcept SM_CLANG_NONBLOCKING;
+  void add_control_input_event (uint offset, int i, float value) noexcept SM_CLANG_NONBLOCKING;
+  void add_pitch_expression_event (uint offset, float value, int channel, int key) noexcept SM_CLANG_NONBLOCKING;
+  void add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key) noexcept SM_CLANG_NONBLOCKING;
 
-  void set_control_input (int i, float value);
+  void set_control_input (int i, float value) noexcept SM_CLANG_NONBLOCKING;
 
-  void set_tempo (double tempo);
-  void set_ppq_pos (double ppq_pos);
+  void set_tempo (double tempo) noexcept SM_CLANG_NONBLOCKING;
+  void set_ppq_pos (double ppq_pos) noexcept SM_CLANG_NONBLOCKING;
   MorphPlanSynth::UpdateP prepare_update (const MorphPlan& plan);
   void apply_update (MorphPlanSynth::UpdateP update);
   double mix_freq() const;

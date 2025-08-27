@@ -67,6 +67,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
 {
   init_aa_filter();
   set_unison_voices (1, 0);
+
   /* avoid malloc during synthesis */
   pstate[0].reserve (PARTIAL_STATE_RESERVE);
   pstate[1].reserve (PARTIAL_STATE_RESERVE);
@@ -74,6 +75,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   unison_phases[1].reserve (PARTIAL_STATE_RESERVE * MAX_UNISON_VOICES);
   unison_freq_factor.reserve (MAX_UNISON_VOICES);
 
+  fft_plan = FFT::plan_fftsr_destructive_float (block_size); // not RT-safe due to locking
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
 
@@ -501,7 +503,7 @@ LiveDecoder::gen_noise()
     {
       /* generate hann-windowed noise using IFFT */
       noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANN, 1);
-      FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
+      FFT::execute_fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output(), fft_plan);
 
       /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
       std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);

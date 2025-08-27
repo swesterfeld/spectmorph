@@ -27,8 +27,6 @@ FFT::debug_in_test_program (bool b)
 
 #if SPECTMORPH_HAVE_FFTW
 
-#include <fftw3.h>
-
 static void save_wisdom();
 
 /*
@@ -146,8 +144,13 @@ FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
 
 static map<int, fftwf_plan> fftsr_destructive_float_plan;
 
-void
-FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mode)
+/*
+ * This function is never RT safe, even if the plan was already generated.
+ * Accessing the plan map fftsr_destructive_float_plan requires using a
+ * lock, which is not RT safe.
+ */
+const FFT::Plan *
+FFT::plan_fftsr_destructive_float (size_t N, PlanMode plan_mode)
 {
   fftwf_plan& plan = read_plan_map_threadsafe (fftsr_destructive_float_plan, N);
 
@@ -167,11 +170,33 @@ FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mod
       free_array_float (plan_out);
       free_array_float (plan_in);
     }
+  return &plan;
+}
+
+/*
+ * This function is RT safe, as we already have a plan and executing an fftw plan is
+ * RT safe.
+ */
+void
+FFT::execute_fftsr_destructive_float (size_t N, float *in, float *out, const Plan *plan) noexcept
+{
   in[N] = in[1];
   in[N+1] = 0;
   in[1] = 0;
 
-  fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
+  fftwf_execute_dft_c2r (*plan, (fftwf_complex *)in, out);
+}
+
+/*
+ * Convenient plan & execute function: plan on demand, afterwards execute. This
+ * function is never RT safe (see above).
+ */
+void
+FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mode)
+{
+  const Plan *plan = plan_fftsr_destructive_float (N, plan_mode);
+
+  execute_fftsr_destructive_float (N, in, out, plan);
 }
 
 static map<int, fftwf_plan> fftac_float_plan;

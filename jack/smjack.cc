@@ -38,7 +38,7 @@ using std::max;
 using std::min;
 
 int
-JackSynth::process (jack_nframes_t n_frames)
+JackSynth::process (jack_nframes_t n_frames) noexcept
 {
   double t;
   if (TRACE_PROCESS_TIME)

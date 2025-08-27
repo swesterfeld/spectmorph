@@ -51,6 +51,12 @@ typedef unsigned int  uint;
   #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
 #endif
 
+#ifdef SM_RTSAN
+  #define SM_CLANG_NONBLOCKING [[clang::nonblocking]]
+#else
+  #define SM_CLANG_NONBLOCKING
+#endif
+
 std::string string_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
 
