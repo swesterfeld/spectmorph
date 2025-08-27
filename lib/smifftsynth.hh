@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "smmath.hh"
+#include "smfft.hh"
 
 namespace SpectMorph {
 
@@ -24,6 +25,7 @@ class IFFTSynth
 
   float             *fft_in;
   float             *fft_out;
+  const FFT::Plan   *fft_plan;
   float             *win_scale;
 
   enum {
