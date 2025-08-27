@@ -586,6 +586,39 @@ MidiSynth::process_audio (float *output, size_t n_values)
 }
 
 void
+MidiSynth::sort_events_stable()
+{
+  // fast path: return if events are already sorted properly
+  if (std::is_sorted (events.begin(), events.end(),
+      [] (const Event& a, const Event& b)
+        { return a.offset < b.offset; }
+      ))
+    return;
+
+  MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
+
+  /*
+   * we don't want to use std::stable_sort, because it allocates memory
+   *
+   * std::sort doesn't allocate extra memory, but is not stable, so we use an
+   * extra field to preserve the relative order of events with the same
+   * timestamp
+   */
+  for (size_t i = 0; i < events.size(); i++)
+    events[i].tmp_sort_index = i;
+
+  auto event_cmp = [] (const Event& a, const Event& b)
+    {
+      if (a.offset == b.offset)
+        return a.tmp_sort_index < b.tmp_sort_index;
+      else
+        return a.offset < b.offset;
+    };
+  std::sort (events.begin(), events.end(), event_cmp);
+}
+
+
+void
 MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks)
 {
   if (inst_edit) // inst edit mode? -> delegate
@@ -616,16 +649,11 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
 
   morph_plan_synth.update_shared_state (m_time_info_gen.time_info (0));
 
-  auto offset_cmp = [] (const Event& a, const Event& b) { return a.offset < b.offset; };
-  if (!std::is_sorted (events.begin(), events.end(), offset_cmp))
-    {
-      /* Hosts should provide midi events sorted by offset. But if the events
-       * are not sorted by offset, we do it here to avoid problems in the event
-       * handling code below.
-       */
-      MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
-      std::stable_sort (events.begin(), events.end(), offset_cmp);
-    }
+  /* Hosts should provide midi events sorted by offset. But if the events
+   * are not sorted by offset, we do it here to avoid problems in the event
+   * handling code below.
+   */
+  sort_events_stable();
 
   for (const auto& event : events)
     {

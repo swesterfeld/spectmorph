@@ -77,6 +77,7 @@ private:
   {
     EventType         type;
     unsigned int      offset;
+    unsigned int      tmp_sort_index; // temp order for stable sort
 
     union {
       NoteEvent       note;       // EVENT_NOTE_ON, EVENT_NOTE_OFF
@@ -186,6 +187,7 @@ private:
   void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
+  void sort_events_stable();
 
 public:
   MidiSynth (double mix_freq, size_t n_voices);
