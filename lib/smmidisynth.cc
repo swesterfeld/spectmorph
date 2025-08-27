@@ -394,7 +394,7 @@ MidiSynth::process_pitch_bend (int channel, float value)
 }
 
 void
-MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity)
+MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity) noexcept
 {
   Event event;
   event.type = EVENT_NOTE_ON;
@@ -407,7 +407,7 @@ MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, fl
 }
 
 void
-MidiSynth::add_note_off_event (uint offset, int channel, int key)
+MidiSynth::add_note_off_event (uint offset, int channel, int key) noexcept
 {
   Event event;
   event.type = EVENT_NOTE_OFF;
@@ -418,7 +418,7 @@ MidiSynth::add_note_off_event (uint offset, int channel, int key)
 }
 
 void
-MidiSynth::add_control_input_event (uint offset, int control_input, float value)
+MidiSynth::add_control_input_event (uint offset, int control_input, float value) noexcept
 {
   Event event;
   event.type = EVENT_CONTROL_VALUE;
@@ -429,7 +429,7 @@ MidiSynth::add_control_input_event (uint offset, int control_input, float value)
 }
 
 void
-MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key)
+MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key) noexcept
 {
   Event event;
   event.type = EVENT_PITCH_EXPRESSION;
@@ -441,7 +441,7 @@ MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, in
 }
 
 void
-MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key)
+MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key) noexcept
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
@@ -458,7 +458,7 @@ MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, i
 }
 
 void
-MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
+MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data) noexcept
 {
   unsigned char status = midi_data[0] & 0xf0;
   const int channel  = midi_data[0] & 0xf;
@@ -619,7 +619,7 @@ MidiSynth::sort_events_stable()
 
 
 void
-MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks)
+MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks) noexcept
 {
   if (inst_edit) // inst edit mode? -> delegate
     {
@@ -739,7 +739,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
 }
 
 void
-MidiSynth::set_control_input (int i, float value)
+MidiSynth::set_control_input (int i, float value) noexcept
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
@@ -747,13 +747,13 @@ MidiSynth::set_control_input (int i, float value)
 }
 
 void
-MidiSynth::set_tempo (double tempo)
+MidiSynth::set_tempo (double tempo) noexcept
 {
   m_tempo = tempo;
 }
 
 void
-MidiSynth::set_ppq_pos (double ppq_pos)
+MidiSynth::set_ppq_pos (double ppq_pos) noexcept
 {
   m_ppq_pos = ppq_pos;
 }
