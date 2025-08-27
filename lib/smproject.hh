@@ -144,7 +144,7 @@ public:
 
   void synth_take_control_event (SynthControlEvent *event);
 
-  bool try_update_synth();
+  bool try_update_synth() noexcept SM_CLANG_NONBLOCKING;
   void set_mix_freq (double mix_freq);
   void set_storage_model (StorageModel model);
   void set_state_changed_notify (bool notify);

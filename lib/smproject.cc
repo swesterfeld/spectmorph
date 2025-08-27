@@ -101,7 +101,7 @@ ControlEventVector::unlock()
 }
 
 bool
-Project::try_update_synth()
+Project::try_update_synth() noexcept
 {
   bool state_changed = false;
   // handle synth updates (if locking is possible without blocking)
