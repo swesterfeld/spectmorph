@@ -7,13 +7,6 @@ using namespace SpectMorph;
 
 using std::string;
 
-WavSetRepo*
-WavSetRepo::the()
-{
-  static Singleton<WavSetRepo> singleton;
-  return singleton.ptr();
-}
-
 WavSet*
 WavSetRepo::get (const string& filename)
 {
