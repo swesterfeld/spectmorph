@@ -10,7 +10,8 @@ using std::string;
 WavSetRepo*
 WavSetRepo::the()
 {
-  return Global::wav_set_repo();
+  static Singleton<WavSetRepo> singleton;
+  return singleton.ptr();
 }
 
 WavSet*

@@ -6,7 +6,6 @@
 #include "smutils.hh"
 #include "smconfig.hh"
 #include "sminstenccache.hh"
-#include "smwavsetrepo.hh"
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
@@ -28,7 +27,6 @@ struct GlobalData
 
   LeakDebuggerList  leak_debugger_list; /* needs to be the first member to track leaks for the other members */
   InstEncCache      inst_enc_cache;
-  WavSetRepo        wav_set_repo;
 
   std::thread::id   ui_thread;
   std::thread::id   dsp_thread;
@@ -169,13 +167,6 @@ Global::inst_enc_cache()
 {
   g_return_val_if_fail (global_data, nullptr);
   return &global_data->inst_enc_cache;
-}
-
-WavSetRepo *
-Global::wav_set_repo()
-{
-  g_return_val_if_fail (global_data, nullptr);
-  return &global_data->wav_set_repo;
 }
 
 void

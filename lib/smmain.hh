@@ -23,12 +23,10 @@ bool sm_dsp_thread();
 void sm_global_free_func (std::function<void()> func);
 
 class InstEncCache;
-class WavSetRepo;
 
 namespace Global
 {
   InstEncCache      *inst_enc_cache();
-  WavSetRepo        *wav_set_repo();
 }
 
 class Main
