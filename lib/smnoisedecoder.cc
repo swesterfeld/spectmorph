@@ -12,12 +12,28 @@
 #include <mutex>
 
 using std::vector;
-using SpectMorph::NoiseDecoder;
 using std::map;
-using SpectMorph::sm_sse;
 
-static std::mutex cos_window_mutex;
-static map<size_t, float *> cos_window_for_block_size;
+using namespace SpectMorph;
+
+class NoiseDecoderGlobal
+{
+public:
+  static NoiseDecoderGlobal *
+  the()
+  {
+    static Singleton<NoiseDecoderGlobal> singleton;
+    return singleton.ptr();
+  }
+  std::mutex           mutex;
+  map<size_t, float *> cos_window_for_block_size;
+
+  ~NoiseDecoderGlobal()
+  {
+    for (auto map_it : cos_window_for_block_size)
+      FFT::free_array_float (map_it.second);
+  }
+};
 
 static size_t
 next_power2 (size_t i)
@@ -38,9 +54,11 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
   block_size (block_size),
   noise_band_partition (Audio::N_NOISE_BANDS, block_size + 2, mix_freq)
 {
-  std::lock_guard lg (cos_window_mutex);
+  NoiseDecoderGlobal *g = NoiseDecoderGlobal::the();
+  std::lock_guard lg (g->mutex);
 
-  float*& win = cos_window_for_block_size[block_size];
+  /* window initialization: protected by g->mutex */
+  float*& win = g->cos_window_for_block_size[block_size];
   if (!win)
     {
       win = FFT::new_array_float (block_size);
@@ -49,6 +67,7 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
     }
   cos_window = win;
 
+  /* k array initialization: protected by g->mutex */
   make_k_array();
 
   // 8 values before and after spectrum required by apply_window/SSE
