@@ -34,6 +34,8 @@ struct GlobalData
   std::thread::id   dsp_thread;
 
   vector<function<void()>> free_functions;
+
+  std::recursive_mutex rec_mutex;
 };
 
 static GlobalData *global_data = nullptr;
@@ -119,12 +121,18 @@ GlobalData::GlobalData()
 
 GlobalData::~GlobalData()
 {
-  for (const auto& func : free_functions)
-    func();
+  for (auto func_it = free_functions.rbegin(); func_it != free_functions.rend(); func_it++)
+    (*func_it)();
   free_functions.clear();
 
   FFT::cleanup();
   sm_debug ("GlobalData instance deleted\n");
+}
+
+std::recursive_mutex&
+sm_global_data_mutex()
+{
+  return global_data->rec_mutex;
 }
 
 Main::Main (int *argc_p, char ***argv_p)
