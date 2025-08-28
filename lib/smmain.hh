@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <mutex>
+#include <atomic>
 
 namespace SpectMorph
 {
@@ -39,21 +40,27 @@ public:
 template<class T>
 class Singleton
 {
-  T *instance = nullptr;
+  std::atomic<T *> instance = nullptr;
 public:
   T *ptr()
   {
-    std::lock_guard lg (sm_global_data_mutex());
-    if (!instance)
+    T *tmp = instance.load();
+    if (!tmp)
       {
-        instance = new T();
-        sm_global_free_func ([this]
+        std::lock_guard lg (sm_global_data_mutex());
+        tmp = instance.load();
+        if (!tmp)
           {
-            delete instance;
-            instance = nullptr;
-          });
+            tmp = new T();
+            instance.store (tmp);
+            sm_global_free_func ([this]
+              {
+                delete instance.load();
+                instance.store (nullptr);
+              });
+          }
       }
-    return instance;
+    return tmp;
   }
 };
 
