@@ -16,6 +16,9 @@ using std::map;
 
 using namespace SpectMorph;
 
+namespace
+{
+
 class NoiseDecoderGlobal
 {
 public:
@@ -34,6 +37,8 @@ public:
       FFT::free_array_float (map_it.second);
   }
 };
+
+}
 
 static size_t
 next_power2 (size_t i)
