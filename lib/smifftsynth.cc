@@ -4,6 +4,7 @@
 #include "smmath.hh"
 #include "smfft.hh"
 #include "smblockutils.hh"
+#include "smmain.hh"
 #include <assert.h>
 #include <stdio.h>
 
@@ -15,21 +16,36 @@ using namespace SpectMorph;
 using std::vector;
 using std::map;
 
-static std::mutex table_mutex;
-static map<size_t, IFFTSynthTable *> table_for_block_size;
+class IFFTSynthGlobal
+{
+public:
+  static IFFTSynthGlobal *
+  the()
+  {
+    static Singleton<IFFTSynthGlobal> singleton;
+    return singleton.ptr();
+  }
+  std::mutex                    mutex;
+  map<size_t, IFFTSynthTable *> table_for_block_size;
+  bool                          sin_table_initialized = false;
 
-namespace SpectMorph {
-  vector<float> IFFTSynth::sin_table;
-}
+  ~IFFTSynthGlobal()
+  {
+    for (auto map_it : table_for_block_size)
+      delete map_it.second;
+  }
+};
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   block_size (block_size)
 {
-  std::lock_guard lg (table_mutex);
+  IFFTSynthGlobal *global = IFFTSynthGlobal::the();
+
+  std::lock_guard lg (global->mutex);
 
   zero_padding = 256;
 
-  table = table_for_block_size[block_size];
+  table = global->table_for_block_size[block_size];
   if (!table)
     {
       const int range = 4;
@@ -67,14 +83,14 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
       for (size_t i = 0; i < block_size; i++)
         table->win_scale[(i + block_size / 2) % block_size] = window_cos (2.0 * i / block_size - 1.0) / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
-      table_for_block_size[block_size] = table;
+      global->table_for_block_size[block_size] = table;
     }
-  if (sin_table.empty())
+  if (!global->sin_table_initialized)
     {
       // sin() table
-      sin_table.resize (SIN_TABLE_SIZE);
       for (size_t i = 0; i < SIN_TABLE_SIZE; i++)
         sin_table[i] = sin (i * 2 * M_PI / SIN_TABLE_SIZE);
+      global->sin_table_initialized = true;
     }
 
   if (win_type == WIN_BLACKMAN_HARRIS_92)
