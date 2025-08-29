@@ -16,6 +16,9 @@ using namespace SpectMorph;
 using std::vector;
 using std::map;
 
+namespace
+{
+
 class IFFTSynthGlobal
 {
 public:
@@ -35,6 +38,8 @@ public:
       delete map_it.second;
   }
 };
+
+}
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   block_size (block_size)
