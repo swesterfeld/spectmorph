@@ -193,19 +193,35 @@ sm_printf (const char *format, ...)
   printf ("%s", str.c_str());
 }
 
-static string pkg_data_dir = CONFIGURE_INSTALLPATH_PKGDATADIR;
-static string bin_dir      = CONFIGURE_INSTALLPATH_BINDIR;
+namespace
+{
+
+struct UtilsGlobal
+{
+  string pkg_data_dir = CONFIGURE_INSTALLPATH_PKGDATADIR;
+  string bin_dir      = CONFIGURE_INSTALLPATH_BINDIR;
+};
+
+static UtilsGlobal *
+utils_global()
+{
+  static auto instance = new UtilsGlobal();   // leak intentionally to avoid global dtor
+  return instance;
+}
+
+};
+
 
 void
 sm_set_pkg_data_dir (const string& data_dir)
 {
-  pkg_data_dir = data_dir;
+  utils_global()->pkg_data_dir = data_dir;
 }
 
 void
 sm_set_bin_dir (const string& dir)
 {
-  bin_dir = dir;
+  utils_global()->bin_dir = dir;
 }
 
 std::string
@@ -213,10 +229,10 @@ sm_get_install_dir (InstallDir p)
 {
   switch (p)
     {
-      case INSTALL_DIR_BIN:         return bin_dir;
-      case INSTALL_DIR_TEMPLATES:   return pkg_data_dir + "/templates";
-      case INSTALL_DIR_INSTRUMENTS: return pkg_data_dir + "/instruments";
-      case INSTALL_DIR_FONTS:       return pkg_data_dir + "/fonts";
+      case INSTALL_DIR_BIN:         return utils_global()->bin_dir;
+      case INSTALL_DIR_TEMPLATES:   return utils_global()->pkg_data_dir + "/templates";
+      case INSTALL_DIR_INSTRUMENTS: return utils_global()->pkg_data_dir + "/instruments";
+      case INSTALL_DIR_FONTS:       return utils_global()->pkg_data_dir + "/fonts";
     }
   return "";
 }
@@ -367,9 +383,9 @@ set_macos_data_dir()
 void
 set_static_linux_data_dir()
 {
-  static string pkg_data_dir;
+  static string *pkg_data_dir = new std::string();   // leak intentionally to avoid global dtor
 
-  if (pkg_data_dir.empty())
+  if (pkg_data_dir->empty())
     {
       /*
        * Typically the plugin (with all its data files) will be installed in
@@ -398,11 +414,11 @@ set_static_linux_data_dir()
         return s;
       };
 
-      pkg_data_dir = dirname (dirname (path));
+      *pkg_data_dir = dirname (dirname (path));
     }
 
-  sm_debug ("static linux data dir: '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
+  sm_debug ("static linux data dir: '%s'\n", pkg_data_dir->c_str());
+  sm_set_pkg_data_dir (*pkg_data_dir);
 }
 
 static string
