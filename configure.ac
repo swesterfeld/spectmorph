@@ -432,7 +432,11 @@ MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
 if test "x$compiler_is_clang" = "xyes"; then
   AM_CFLAGS="$AM_CFLAGS -Wno-vla-cxx-extension"
   AM_CXXFLAGS="$AM_CXXFLAGS -Wno-vla-cxx-extension"
+  WARN_GLOBAL_CDTORS="-Wglobal-constructors -Wexit-time-destructors"
+else
+  WARN_GLOBAL_CDTORS=""
 fi
+AC_SUBST(WARN_GLOBAL_CDTORS)
 
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
