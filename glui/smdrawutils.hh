@@ -4,6 +4,7 @@
 #define SPECTMORPH_DRAWUTILS_HH
 
 #include "smwidget.hh"
+#include <map>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -89,6 +90,7 @@ struct DrawUtils
   {
     // draw label
     cairo_set_font_size (cr, 11.0);
+
     select_font_face (bold);
 
     cairo_font_extents_t font_extents;
@@ -156,25 +158,41 @@ struct DrawUtils
 
     for (auto p : text) /* TODO: utf 8 */
       {
+        static struct Glyph {
+          int bitmap_left;
+          int bitmap_top;
+          double advance_x;
+          cairo_surface_t *surface;
+        } *glyph;
+        static std::map<FT_UInt, Glyph *> glyph_cache;
         FT_UInt glyph_index = FT_Get_Char_Index (face, p);
+        if (!glyph_cache[glyph_index])
+          {
+            glyph_cache[glyph_index] = glyph = new Glyph();
 
-        // Load and render glyph
-        if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
-            continue; // skip on error
-        }
-        FT_GlyphSlot g = face->glyph;
-        FT_Bitmap *bmp = &g->bitmap;
-              // Create Cairo image surface from FreeType bitmap (grayscale -> alpha mask)
-        cairo_surface_t *glyph_surface =
-            cairo_image_surface_create(CAIRO_FORMAT_A8, bmp->width, bmp->rows);
+            // Load and render glyph
+            if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
+                continue; // skip on error
+            }
+            FT_GlyphSlot g = face->glyph;
+            FT_Bitmap *bmp = &g->bitmap;
+                  // Create Cairo image surface from FreeType bitmap (grayscale -> alpha mask)
+            cairo_surface_t *glyph_surface =
+                cairo_image_surface_create(CAIRO_FORMAT_A8, bmp->width, bmp->rows);
 
-        unsigned char *dst = cairo_image_surface_get_data(glyph_surface);
-        for (int y = 0; y < bmp->rows; y++) {
-            memcpy(dst + y * cairo_image_surface_get_stride(glyph_surface),
-                   bmp->buffer + y * bmp->pitch,
-                   bmp->width);
-        }
-        cairo_surface_mark_dirty (glyph_surface);
+            unsigned char *dst = cairo_image_surface_get_data(glyph_surface);
+            for (int y = 0; y < bmp->rows; y++) {
+                memcpy(dst + y * cairo_image_surface_get_stride(glyph_surface),
+                       bmp->buffer + y * bmp->pitch,
+                       bmp->width);
+            }
+            cairo_surface_mark_dirty (glyph_surface);
+            glyph->surface = glyph_surface;
+            glyph->advance_x = g->advance.x;
+            glyph->bitmap_left = g->bitmap_left;
+            glyph->bitmap_top = g->bitmap_top;
+          }
+        glyph = glyph_cache[glyph_index];
 
         // Paint glyph at correct position
         cairo_save (cr);
@@ -189,8 +207,8 @@ struct DrawUtils
         mat.yx = 0.0;
         cairo_set_matrix (cr, &mat);
 
-        double ux = (pen_x * s + g->bitmap_left);
-        double uy = (pen_y * s - g->bitmap_top);
+        double ux = (pen_x * s + glyph->bitmap_left);
+        double uy = (pen_y * s - glyph->bitmap_top);
 
         // Snap to integer device pixels
         cairo_user_to_device (cr, &ux, &uy);
@@ -198,13 +216,12 @@ struct DrawUtils
         uy = round (uy);
         cairo_device_to_user (cr, &ux, &uy);
 
-        cairo_mask_surface (cr, glyph_surface, ux, uy);
+        cairo_mask_surface (cr, glyph->surface, ux, uy);
         cairo_restore (cr);
 
         // Advance pen position
-        pen_x += (g->advance.x / 64.0) / s; // 1/64 pixels
-        cairo_surface_destroy (glyph_surface);
-    }
+        pen_x += (glyph->advance_x / 64.0) / s; // 1/64 pixels
+      }
 
 #if 0
     // draw label
