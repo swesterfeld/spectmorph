@@ -174,26 +174,32 @@ struct DrawUtils
                    bmp->buffer + y * bmp->pitch,
                    bmp->width);
         }
-        cairo_surface_mark_dirty(glyph_surface);
+        cairo_surface_mark_dirty (glyph_surface);
 
         // Paint glyph at correct position
-        cairo_save(cr);
+        cairo_save (cr);
 
-        cairo_scale(cr, 1.0/s, 1.0/s);       // scale down drawing
+        cairo_matrix_t mat;
+        cairo_get_matrix (cr, &mat);
 
-#if 0
+        // zero out scale/skew
+        mat.xx = 1.0;
+        mat.yy = 1.0;
+        mat.xy = 0.0;
+        mat.yx = 0.0;
+        cairo_set_matrix (cr, &mat);
+
         double ux = (pen_x * s + g->bitmap_left);
         double uy = (pen_y * s - g->bitmap_top);
 
-        double dx, dy;
-        cairo_user_to_device(cr, &ux, &uy);   // go to device space
-        printf ("%f %f\n", ux, uy);
-#endif
+        // Snap to integer device pixels
+        cairo_user_to_device (cr, &ux, &uy);
+        ux = round (ux);
+        uy = round (uy);
+        cairo_device_to_user (cr, &ux, &uy);
 
-        cairo_mask_surface(cr, glyph_surface,
-                           (pen_x * s + g->bitmap_left),
-                           (pen_y * s - g->bitmap_top));
-        cairo_restore(cr);
+        cairo_mask_surface (cr, glyph_surface, ux, uy);
+        cairo_restore (cr);
 
         // Advance pen position
         pen_x += (g->advance.x / 64.0) / s; // 1/64 pixels
