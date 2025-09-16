@@ -122,8 +122,6 @@ struct DrawUtils
     cairo_get_matrix(cr, &m);
     double s = (m.xx + m.yy) / 2;
 
-    // Set font size (pixels)
-    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
 
     if (orientation == Orientation::HORIZONTAL)
       {
@@ -156,6 +154,19 @@ struct DrawUtils
     double pen_y = 0;
 #endif
 
+    // Use simple matrix while font rendering
+    cairo_save (cr);
+
+    cairo_matrix_t mat;
+    cairo_get_matrix (cr, &mat);
+
+    // zero out scale/skew
+    mat.xx = 1.0;
+    mat.yy = 1.0;
+    mat.xy = 0.0;
+    mat.yx = 0.0;
+    cairo_set_matrix (cr, &mat);
+
     for (auto p : text) /* TODO: utf 8 */
       {
         static struct Glyph {
@@ -169,6 +180,9 @@ struct DrawUtils
         if (!glyph_cache[glyph_index])
           {
             glyph_cache[glyph_index] = glyph = new Glyph();
+
+            // Set font size (pixels)
+            FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
 
             // Load and render glyph
             if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
@@ -194,18 +208,6 @@ struct DrawUtils
           }
         glyph = glyph_cache[glyph_index];
 
-        // Paint glyph at correct position
-        cairo_save (cr);
-
-        cairo_matrix_t mat;
-        cairo_get_matrix (cr, &mat);
-
-        // zero out scale/skew
-        mat.xx = 1.0;
-        mat.yy = 1.0;
-        mat.xy = 0.0;
-        mat.yx = 0.0;
-        cairo_set_matrix (cr, &mat);
 
         double ux = (pen_x * s + glyph->bitmap_left);
         double uy = (pen_y * s - glyph->bitmap_top);
@@ -217,11 +219,11 @@ struct DrawUtils
         cairo_device_to_user (cr, &ux, &uy);
 
         cairo_mask_surface (cr, glyph->surface, ux, uy);
-        cairo_restore (cr);
 
         // Advance pen position
         pen_x += (glyph->advance_x / 64.0) / s; // 1/64 pixels
       }
+    cairo_restore (cr);
 
 #if 0
     // draw label
