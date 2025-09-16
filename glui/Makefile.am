@@ -65,11 +65,11 @@ libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
 AM_CXXFLAGS += $(GLIB_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) $(FREETYPE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
 smuitest_SOURCES = smuitest.cc
-smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(FREETYPE_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
 smscrolltest_SOURCES = smscrolltest.cc
-smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(FREETYPE_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smscrolltest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest smscrolltest

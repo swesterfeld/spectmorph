@@ -4,6 +4,8 @@
 #define SPECTMORPH_DRAWUTILS_HH
 
 #include "smwidget.hh"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 namespace SpectMorph
 {
@@ -95,6 +97,120 @@ struct DrawUtils
     cairo_text_extents_t extents;
     cairo_text_extents (cr, text.c_str(), &extents);
 
+    static bool init = false;
+    static FT_Library ft_library;
+    static FT_Face face;
+    if (!init)
+      {
+      // Initialize FreeType
+        if (FT_Init_FreeType(&ft_library)) {
+            fprintf(stderr, "Could not init FreeType\n");
+            return;
+        }
+
+        // Load TTF font face
+        if (FT_New_Face(ft_library, "/usr/local/spectmorph/share/spectmorph/fonts/dejavu-lgc-sans.ttf", 0, &face)) {
+            fprintf(stderr, "Could not open font file\n");
+            return;
+        }
+        init = true;
+      }
+
+    cairo_matrix_t m;
+    cairo_get_matrix(cr, &m);
+    double s = (m.xx + m.yy) / 2;
+
+    // Set font size (pixels)
+    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
+
+    if (orientation == Orientation::HORIZONTAL)
+      {
+#if 0
+        double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
+#endif
+        switch (align)
+          {
+#if 0
+            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
+                                    break;
+            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
+                                    break;
+            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
+                                    break;
+#endif
+            case TextAlign::LEFT:   /* nothing */
+                                    break;
+            case TextAlign::CENTER: x += (width / 2) - extents.x_bearing - extents.width / 2;
+                                    break;
+            case TextAlign::RIGHT:  x += width - extents.x_bearing - extents.width;
+                                    break;
+          }
+        //cairo_show_text (cr, text.c_str());
+      }
+    double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
+    double pen_x = x, pen_y = fy;
+#if 0
+    double pen_x = 0;
+    double pen_y = 0;
+#endif
+
+    for (auto p : text) /* TODO: utf 8 */
+      {
+        FT_UInt glyph_index = FT_Get_Char_Index (face, p);
+
+        // Load and render glyph
+        if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
+            continue; // skip on error
+        }
+        FT_GlyphSlot g = face->glyph;
+        FT_Bitmap *bmp = &g->bitmap;
+              // Create Cairo image surface from FreeType bitmap (grayscale -> alpha mask)
+        cairo_surface_t *glyph_surface =
+            cairo_image_surface_create(CAIRO_FORMAT_A8, bmp->width, bmp->rows);
+
+        unsigned char *dst = cairo_image_surface_get_data(glyph_surface);
+        for (int y = 0; y < bmp->rows; y++) {
+            memcpy(dst + y * cairo_image_surface_get_stride(glyph_surface),
+                   bmp->buffer + y * bmp->pitch,
+                   bmp->width);
+        }
+        cairo_surface_mark_dirty(glyph_surface);
+
+        // Paint glyph at correct position
+        cairo_save(cr);
+
+        cairo_scale(cr, 1.0/s, 1.0/s);       // scale down drawing
+
+#if 0
+        double ux = (pen_x * s + g->bitmap_left);
+        double uy = (pen_y * s - g->bitmap_top);
+
+        double dx, dy;
+        cairo_user_to_device(cr, &ux, &uy);   // go to device space
+        printf ("%f %f\n", ux, uy);
+#endif
+
+        cairo_mask_surface(cr, glyph_surface,
+                           (pen_x * s + g->bitmap_left),
+                           (pen_y * s - g->bitmap_top));
+        cairo_restore(cr);
+
+        // Advance pen position
+        pen_x += (g->advance.x / 64.0) / s; // 1/64 pixels
+        cairo_surface_destroy (glyph_surface);
+    }
+
+#if 0
+    // draw label
+    cairo_set_font_size (cr, 11.0);
+    select_font_face (bold);
+
+    cairo_font_extents_t font_extents;
+    cairo_font_extents (cr, &font_extents);
+
+    cairo_text_extents_t extents;
+    cairo_text_extents (cr, text.c_str(), &extents);
+
     if (orientation == Orientation::HORIZONTAL)
       {
         double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
@@ -126,6 +242,7 @@ struct DrawUtils
         cairo_show_text (cr, text.c_str());
         cairo_restore (cr);
       }
+#endif
   }
   cairo_text_extents_t
   text_extents (const std::string& text)
