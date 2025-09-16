@@ -75,6 +75,27 @@ public:
   }
 };
 
+class TextPerf : public Widget
+{
+public:
+  TextPerf (Widget *parent) :
+    Widget (parent)
+  {
+  }
+  void
+  draw (const DrawEvent& devent) override
+  {
+    auto t = get_time();
+    int reps = 20'000;
+    DrawUtils du (devent.cr);
+    string s = "the quick brown fox";
+    for (int i = 0; i < reps; i++)
+      du.text (s.c_str(), 0, 0, 50, 10);
+    printf ("%.2f Mchars/sec\n", (reps * s.size()) / (get_time() - t) / /* Mchars */ 1'000'000);
+    exit (0);
+  }
+};
+
 class MainWindow : public Window
 {
 public:
@@ -244,6 +265,13 @@ public:
     grid.add_widget (sprite_perf, 36, 40, 5, 5);
   }
   void
+  set_text_perf()
+  {
+    FixedGrid grid;
+    auto text_perf = new TextPerf (this);
+    grid.add_widget (text_perf, 10, 40, 35, 5);
+  }
+  void
   setup_labels()
   {
     FixedGrid grid;
@@ -324,6 +352,9 @@ main (int argc, char **argv)
 
   if (argc == 2 && string (argv[1]) == "spriteperf")
     window.set_sprite_perf();
+
+  if (argc == 2 && string (argv[1]) == "textperf")
+    window.set_text_perf();
 
   while (!quit) {
     event_loop.wait_event_fps();
