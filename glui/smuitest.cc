@@ -86,7 +86,7 @@ public:
   draw (const DrawEvent& devent) override
   {
     auto t = get_time();
-    int reps = 20'000;
+    int reps = 100'000;
     DrawUtils du (devent.cr);
     string s = "the quick brown fox";
     for (int i = 0; i < reps; i++)

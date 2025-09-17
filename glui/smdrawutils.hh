@@ -167,19 +167,27 @@ struct DrawUtils
     mat.yx = 0.0;
     cairo_set_matrix (cr, &mat);
 
-    for (auto p : text) /* TODO: utf 8 */
+    struct Glyph {
+      int bitmap_left;
+      int bitmap_top;
+      int bitmap_width;
+      int bitmap_height;
+      std::vector<uint8_t> bitmap;
+      double advance_x;
+      cairo_surface_t *surface;
+    };
+    static std::map<FT_UInt, Glyph *> glyph_cache;
+    auto text32 = to_utf32 (text);
+    std::vector<Glyph *> glyphs;
+    int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
+    bool first = true;
+    for (auto p : text32)
       {
-        static struct Glyph {
-          int bitmap_left;
-          int bitmap_top;
-          double advance_x;
-          cairo_surface_t *surface;
-        } *glyph;
-        static std::map<FT_UInt, Glyph *> glyph_cache;
         FT_UInt glyph_index = FT_Get_Char_Index (face, p);
         if (!glyph_cache[glyph_index])
           {
-            glyph_cache[glyph_index] = glyph = new Glyph();
+            Glyph *glyph = new Glyph();
+            glyph_cache[glyph_index] = glyph;
 
             // Set font size (pixels)
             FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
@@ -190,39 +198,65 @@ struct DrawUtils
             }
             FT_GlyphSlot g = face->glyph;
             FT_Bitmap *bmp = &g->bitmap;
-                  // Create Cairo image surface from FreeType bitmap (grayscale -> alpha mask)
-            cairo_surface_t *glyph_surface =
-                cairo_image_surface_create(CAIRO_FORMAT_A8, bmp->width, bmp->rows);
 
-            unsigned char *dst = cairo_image_surface_get_data(glyph_surface);
-            for (int y = 0; y < bmp->rows; y++) {
-                memcpy(dst + y * cairo_image_surface_get_stride(glyph_surface),
-                       bmp->buffer + y * bmp->pitch,
-                       bmp->width);
-            }
-            cairo_surface_mark_dirty (glyph_surface);
-            glyph->surface = glyph_surface;
+            for (int y = 0; y < bmp->rows; y++)
+              {
+                for (int x = 0; x < bmp->width; x++)
+                  glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
+              }
+
             glyph->advance_x = g->advance.x;
             glyph->bitmap_left = g->bitmap_left;
             glyph->bitmap_top = g->bitmap_top;
+            glyph->bitmap_width = bmp->width;
+            glyph->bitmap_height = bmp->rows;
           }
-        glyph = glyph_cache[glyph_index];
-
-
-        double ux = (pen_x * s + glyph->bitmap_left);
-        double uy = (pen_y * s - glyph->bitmap_top);
-
-        // Snap to integer device pixels
-        cairo_user_to_device (cr, &ux, &uy);
-        ux = round (ux);
-        uy = round (uy);
-        cairo_device_to_user (cr, &ux, &uy);
-
-        cairo_mask_surface (cr, glyph->surface, ux, uy);
-
-        // Advance pen position
-        pen_x += (glyph->advance_x / 64.0) / s; // 1/64 pixels
+        glyphs.push_back (glyph_cache[glyph_index]);
+        auto glyph = glyphs.back();
+        bb_top = std::max (glyph->bitmap_top, bb_top);
+        if (first)
+          {
+            bb_left = bb_pen_x + glyph->bitmap_left;
+            first = false;
+          }
+        bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+        bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
+        bb_pen_x += glyph->advance_x / 64;
       }
+
+    int bb_width = bb_right - bb_left;
+    int bb_height = bb_bottom + bb_top;
+
+    cairo_surface_t *glyph_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
+
+    int xx = 0;
+    for (auto glyph : glyphs)
+      {
+        unsigned char *dst = cairo_image_surface_get_data (glyph_surface);
+        auto dst_stride = cairo_image_surface_get_stride (glyph_surface);
+
+        for (int y = 0; y < glyph->bitmap_height; y++)
+          {
+            memcpy (&dst[(y + (bb_top - glyph->bitmap_top)) * dst_stride + (glyph->bitmap_left - bb_left) + xx],
+                    &glyph->bitmap[y * glyph->bitmap_width],
+                    glyph->bitmap_width);
+          }
+        xx += glyph->advance_x / 64;
+      }
+    cairo_surface_mark_dirty (glyph_surface);
+
+    double ux = (pen_x * s) + bb_left;
+    double uy = (pen_y * s) - bb_top;
+
+    // Snap to integer device pixels
+    cairo_user_to_device (cr, &ux, &uy);
+    ux = round (ux);
+    uy = round (uy);
+    cairo_device_to_user (cr, &ux, &uy);
+
+    cairo_mask_surface (cr, glyph_surface, ux, uy);
+    cairo_surface_destroy (glyph_surface);
+
     cairo_restore (cr);
 
 #if 0
