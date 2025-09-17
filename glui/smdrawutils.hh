@@ -11,6 +11,18 @@
 namespace SpectMorph
 {
 
+#define DEBUG_EXTENTS 0
+
+struct TextExtents
+{
+  double x_bearing = 0;
+  double y_bearing = 0;
+  double width = 0;
+  double height = 0;
+  double x_advance = 0;
+  double y_advance = 0;
+};
+
 struct DrawUtils
 {
   cairo_t *cr;
@@ -96,8 +108,7 @@ struct DrawUtils
     cairo_font_extents_t font_extents;
     cairo_font_extents (cr, &font_extents);
 
-    cairo_text_extents_t extents;
-    cairo_text_extents (cr, text.c_str(), &extents);
+    TextExtents extents;
 
     static bool init = false;
     static FT_Library ft_library;
@@ -118,40 +129,9 @@ struct DrawUtils
         init = true;
       }
 
-    cairo_matrix_t m;
-    cairo_get_matrix(cr, &m);
-    double s = (m.xx + m.yy) / 2;
-
-
-    if (orientation == Orientation::HORIZONTAL)
-      {
-#if 0
-        double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
-#endif
-        switch (align)
-          {
-#if 0
-            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
-                                    break;
-            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
-                                    break;
-            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
-                                    break;
-#endif
-            case TextAlign::LEFT:   /* nothing */
-                                    break;
-            case TextAlign::CENTER: x += (width / 2) - extents.x_bearing - extents.width / 2;
-                                    break;
-            case TextAlign::RIGHT:  x += width - extents.x_bearing - extents.width;
-                                    break;
-          }
-        //cairo_show_text (cr, text.c_str());
-      }
-    double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
-    double pen_x = x, pen_y = fy;
-#if 0
-    double pen_x = 0;
-    double pen_y = 0;
+#if DEBUG_EXTENTS
+    cairo_text_extents_t cairo_extents;
+    cairo_text_extents (cr, text.c_str(), &cairo_extents);
 #endif
 
     // Use simple matrix while font rendering
@@ -159,6 +139,8 @@ struct DrawUtils
 
     cairo_matrix_t mat;
     cairo_get_matrix (cr, &mat);
+
+    double s = (mat.xx + mat.yy) / 2;
 
     // zero out scale/skew
     mat.xx = 1.0;
@@ -213,20 +195,64 @@ struct DrawUtils
           }
         glyphs.push_back (glyph_cache[glyph_index]);
         auto glyph = glyphs.back();
-        bb_top = std::max (glyph->bitmap_top, bb_top);
-        if (first)
+        if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box
           {
-            bb_left = bb_pen_x + glyph->bitmap_left;
-            first = false;
+            bb_top = std::max (glyph->bitmap_top, bb_top);
+            if (first && !glyph->bitmap.empty())
+              {
+                bb_left = bb_pen_x + glyph->bitmap_left;
+                first = false;
+              }
+            bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+            bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
           }
-        bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
-        bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
         bb_pen_x += glyph->advance_x / 64;
       }
 
     int bb_width = bb_right - bb_left;
     int bb_height = bb_bottom + bb_top;
 
+    extents.x_bearing = bb_left / s;
+    extents.y_bearing = -bb_top / s;
+    extents.width = bb_width / s;
+    extents.height = bb_height / s;
+    extents.x_advance = bb_pen_x / s;
+
+#if (DEBUG_EXTENTS)
+    printf ("x_bearing %f %f\n", extents.x_bearing, cairo_extents.x_bearing);
+    printf ("y_bearing %f %f\n", extents.y_bearing, cairo_extents.y_bearing);
+    printf ("width %f %f\n", extents.width, cairo_extents.width);
+    printf ("height %f %f\n", extents.height, cairo_extents.height);
+    printf ("x_advance %f %f\n", extents.x_advance, cairo_extents.x_advance);
+    printf ("y_advance %f %f\n", extents.y_advance, cairo_extents.y_advance);
+#endif
+
+    if (orientation == Orientation::HORIZONTAL)
+      {
+#if 0
+        double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
+#endif
+        switch (align)
+          {
+#if 0
+            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
+                                    break;
+            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
+                                    break;
+            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
+                                    break;
+#endif
+            case TextAlign::LEFT:   /* nothing */
+                                    break;
+            case TextAlign::CENTER: x += (width / 2) - extents.x_bearing - extents.width / 2;
+                                    break;
+            case TextAlign::RIGHT:  x += width - extents.x_bearing - extents.width;
+                                    break;
+          }
+        //cairo_show_text (cr, text.c_str());
+      }
+    double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
+    double pen_x = x, pen_y = fy;
     cairo_surface_t *glyph_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
 
     int xx = 0;
