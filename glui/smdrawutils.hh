@@ -195,16 +195,22 @@ struct DrawUtils
           }
         glyphs.push_back (glyph_cache[glyph_index]);
         auto glyph = glyphs.back();
-        if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box
+        if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box, assume left->right order
           {
-            bb_top = std::max (glyph->bitmap_top, bb_top);
-            if (first && !glyph->bitmap.empty())
+            if (first)
               {
                 bb_left = bb_pen_x + glyph->bitmap_left;
+                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+                bb_top = glyph->bitmap_top;
+                bb_bottom = glyph->bitmap_height - glyph->bitmap_top;
                 first = false;
               }
-            bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
-            bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
+            else
+              {
+                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+                bb_top = std::max (bb_top, glyph->bitmap_top);
+                bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
+              }
           }
         bb_pen_x += glyph->advance_x / 64;
       }
