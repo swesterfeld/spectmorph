@@ -140,13 +140,17 @@ public:
     RENDER_SURFACE
   };
   cairo_surface_t *
-  text_to_surface (double font_size, bool bold, const std::string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
+  text_to_surface (double ui_scaling, bool bold, const std::string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
   {
     std::lock_guard lg (mutex);
 
     FT_Face face = bold ? face_bold : face_normal;
 
-    auto& glyph_cache = get_glyph_cache (font_size, bold);
+    // Set font size (pixels)
+    constexpr double font_size = 11.0;
+    FT_Set_Char_Size (face, 0, lrint (font_size * 64 * ui_scaling), 0, 0);
+
+    auto& glyph_cache = get_glyph_cache (font_size * ui_scaling, bold);
     std::vector<Glyph *> glyphs;
     auto text32 = to_utf32 (text);
     for (auto p : text32)
@@ -208,18 +212,18 @@ public:
 
     if (extents)
       {
-        extents->x_bearing = bb_left / font_size;
-        extents->y_bearing = -bb_top / font_size;
-        extents->width = bb_width / font_size;
-        extents->height = bb_height / font_size;
-        extents->x_advance = bb_pen_x / font_size;
+        extents->x_bearing = bb_left / ui_scaling;
+        extents->y_bearing = -bb_top / ui_scaling;
+        extents->width = bb_width / ui_scaling;
+        extents->height = bb_height / ui_scaling;
+        extents->x_advance = bb_pen_x / ui_scaling;
       }
     if (font_extents)
       {
-        font_extents->ascent = face->size->metrics.ascender / 64.0 / font_size;
-        font_extents->descent = -face->size->metrics.descender / 64.0 / font_size;
-        font_extents->height = face->size->metrics.height / 64.0 / font_size;
-        font_extents->max_x_advance = face->size->metrics.max_advance / 64.0 / font_size;
+        font_extents->ascent = face->size->metrics.ascender / 64.0 / ui_scaling;
+        font_extents->descent = -face->size->metrics.descender / 64.0 / ui_scaling;
+        font_extents->height = face->size->metrics.height / 64.0 / ui_scaling;
+        font_extents->max_x_advance = face->size->metrics.max_advance / 64.0 / ui_scaling;
       }
 
     if (mode == Mode::EXTENTS_ONLY)
@@ -326,7 +330,6 @@ struct DrawUtils
         TextAlign align = TextAlign::LEFT, Orientation orientation = Orientation::HORIZONTAL)
   {
     // draw label
-    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face_normal;
 
 #if DEBUG_EXTENTS
     cairo_set_font_size (cr, 11.0);
@@ -346,9 +349,6 @@ struct DrawUtils
     cairo_get_matrix (cr, &mat);
 
     double s = (mat.xx + mat.yy) / 2;
-
-    // Set font size (pixels)
-    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
 
     // zero out scale/skew
     mat.xx = 1.0;
@@ -465,14 +465,12 @@ struct DrawUtils
   TextExtents
   text_extents (const std::string& text)
   {
-    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face_normal;
     cairo_matrix_t mat;
     cairo_get_matrix (cr, &mat);
     double s = (mat.xx + mat.yy) / 2;
     TextExtents extents;
 
     // Set font size (pixels)
-    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
     TextRenderer::the()->text_to_surface (s, bold, text, nullptr, &extents, TextRenderer::Mode::EXTENTS_ONLY);
 
     return extents;
