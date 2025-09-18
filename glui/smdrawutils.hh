@@ -45,6 +45,7 @@ struct Glyph
 };
 
 class TextRenderer {
+  std::mutex                            mutex;
   std::unique_ptr<Config>               cfg;
   bool                                  ft_init_ok = false;
   FT_Library                            ft_library;
@@ -80,6 +81,13 @@ class TextRenderer {
         return false;
       }
   }
+  std::map<std::pair<int, bool>, std::map<FT_UInt, Glyph *>> glyph_caches;
+
+  std::map<FT_UInt, Glyph *>&
+  get_glyph_cache (double size, bool bold)
+  {
+    return glyph_caches[std::make_pair (lrint (size * 64), bold)];
+  }
 public:
   static TextRenderer *
   the()
@@ -101,17 +109,12 @@ public:
 
   FT_Face face_normal {};
   FT_Face face_bold {};
-  std::map<std::pair<int, bool>, std::map<FT_UInt, Glyph *>> glyph_caches;
-
-  std::map<FT_UInt, Glyph *>&
-  get_glyph_cache (double size, bool bold)
-  {
-    return glyph_caches[std::make_pair (lrint (size * 64), bold)];
-  }
 
   size_t
   estimate_cache_size()
   {
+    std::lock_guard lg (mutex);
+
     size_t size = 0;
     for (auto& cache : glyph_caches)
       {
@@ -127,6 +130,8 @@ public:
   void
   clear_cache()
   {
+    std::lock_guard lg (mutex);
+
     glyph_caches.clear();
   }
 
@@ -137,6 +142,8 @@ public:
   cairo_surface_t *
   text_to_surface (double font_size, bool bold, const std::string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
   {
+    std::lock_guard lg (mutex);
+
     FT_Face face = bold ? face_bold : face_normal;
 
     auto& glyph_cache = get_glyph_cache (font_size, bold);
