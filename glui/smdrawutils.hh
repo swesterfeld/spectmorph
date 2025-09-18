@@ -456,14 +456,19 @@ struct DrawUtils
       }
 #endif
   }
-  cairo_text_extents_t
+  TextExtents
   text_extents (const std::string& text)
   {
-    cairo_set_font_size (cr, 11.0);
-    select_font_face (bold);
+    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face_normal;
+    cairo_matrix_t mat;
+    cairo_get_matrix (cr, &mat);
+    double s = (mat.xx + mat.yy) / 2;
+    TextExtents extents;
 
-    cairo_text_extents_t extents;
-    cairo_text_extents (cr, text.c_str(), &extents);
+    // Set font size (pixels)
+    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
+    TextRenderer::the()->text_to_surface (s, bold, text, nullptr, &extents, TextRenderer::Mode::EXTENTS_ONLY);
+
     return extents;
   }
   double
@@ -478,7 +483,7 @@ struct DrawUtils
   }
   void select_font_face (bool bold);
   static double static_text_width (Window *window, const std::string& text); /* static version: without instance */
-  static cairo_text_extents_t static_text_extents (Window *window, const std::string& text); /* static version: without instance */
+  static TextExtents static_text_extents (Window *window, const std::string& text); /* static version: without instance */
 };
 
 }

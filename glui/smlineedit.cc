@@ -80,7 +80,7 @@ LineEdit::draw (const DrawEvent& devent)
       auto   prefix = text32.substr (0, i);
       string b4 = to_utf8 (prefix);
 
-      cairo_text_extents_t extents = du.text_extents (b4);
+      TextExtents extents = du.text_extents (b4);
       prefix_x.push_back (10 + extents.x_advance + 1);
     }
   if (select_start >= 0 && select_start != cursor_pos)
