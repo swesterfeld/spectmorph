@@ -130,8 +130,12 @@ public:
     glyph_caches.clear();
   }
 
-  std::vector<Glyph *>
-  text_to_glyphs (double font_size, bool bold, const std::string& text)
+  enum class Mode {
+    EXTENTS_ONLY,
+    RENDER_SURFACE
+  };
+  cairo_surface_t *
+  text_to_surface (double font_size, bool bold, const std::string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
   {
     FT_Face face = bold ? face_bold : face_normal;
 
@@ -168,7 +172,71 @@ public:
           }
         glyphs.push_back (glyph_cache[glyph_index]);
       }
-    return glyphs;
+    int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
+    bool first = true;
+    for (auto glyph : glyphs)
+      {
+        if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box, assume left->right order
+          {
+            if (first)
+              {
+                bb_left = bb_pen_x + glyph->bitmap_left;
+                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+                bb_top = glyph->bitmap_top;
+                bb_bottom = glyph->bitmap_height - glyph->bitmap_top;
+                first = false;
+              }
+            else
+              {
+                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
+                bb_top = std::max (bb_top, glyph->bitmap_top);
+                bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
+              }
+          }
+        bb_pen_x += glyph->advance_x / 64;
+      }
+
+    int bb_width = bb_right - bb_left;
+    int bb_height = bb_bottom + bb_top;
+
+    if (extents)
+      {
+        extents->x_bearing = bb_left / font_size;
+        extents->y_bearing = -bb_top / font_size;
+        extents->width = bb_width / font_size;
+        extents->height = bb_height / font_size;
+        extents->x_advance = bb_pen_x / font_size;
+      }
+    if (font_extents)
+      {
+        font_extents->ascent = face->size->metrics.ascender / 64.0 / font_size;
+        font_extents->descent = -face->size->metrics.descender / 64.0 / font_size;
+        font_extents->height = face->size->metrics.height / 64.0 / font_size;
+        font_extents->max_x_advance = face->size->metrics.max_advance / 64.0 / font_size;
+      }
+
+    if (mode == Mode::EXTENTS_ONLY)
+      return nullptr;
+
+    cairo_surface_t *glyph_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
+
+    int xx = 0;
+    for (auto glyph : glyphs)
+      {
+        unsigned char *dst = cairo_image_surface_get_data (glyph_surface);
+        auto dst_stride = cairo_image_surface_get_stride (glyph_surface);
+
+        for (int y = 0; y < glyph->bitmap_height; y++)
+          {
+            memcpy (&dst[(y + (bb_top - glyph->bitmap_top)) * dst_stride + (glyph->bitmap_left - bb_left) + xx],
+                    &glyph->bitmap[y * glyph->bitmap_width],
+                    glyph->bitmap_width);
+          }
+        xx += glyph->advance_x / 64;
+      }
+    cairo_surface_mark_dirty (glyph_surface);
+
+    return glyph_surface;
   }
 };
 
@@ -283,47 +351,10 @@ struct DrawUtils
     mat.yx = 0.0;
     cairo_set_matrix (cr, &mat);
 
-    std::vector<Glyph *> glyphs = TextRenderer::the()->text_to_glyphs (s, bold, text);
-
-    int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
-    bool first = true;
-    for (auto glyph : glyphs)
-      {
-        if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box, assume left->right order
-          {
-            if (first)
-              {
-                bb_left = bb_pen_x + glyph->bitmap_left;
-                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
-                bb_top = glyph->bitmap_top;
-                bb_bottom = glyph->bitmap_height - glyph->bitmap_top;
-                first = false;
-              }
-            else
-              {
-                bb_right = bb_pen_x + glyph->bitmap_left + glyph->bitmap_width;
-                bb_top = std::max (bb_top, glyph->bitmap_top);
-                bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
-              }
-          }
-        bb_pen_x += glyph->advance_x / 64;
-      }
-
-    int bb_width = bb_right - bb_left;
-    int bb_height = bb_bottom + bb_top;
-
     TextExtents extents;
-    extents.x_bearing = bb_left / s;
-    extents.y_bearing = -bb_top / s;
-    extents.width = bb_width / s;
-    extents.height = bb_height / s;
-    extents.x_advance = bb_pen_x / s;
-
     FontExtents font_extents;
-    font_extents.ascent = face->size->metrics.ascender / 64.0 / s;
-    font_extents.descent = -face->size->metrics.descender / 64.0 / s;
-    font_extents.height = face->size->metrics.height / 64.0 / s;
-    font_extents.max_x_advance = face->size->metrics.max_advance / 64.0 / s;
+
+    cairo_surface_t *glyph_surface = TextRenderer::the()->text_to_surface (s, bold, text, &font_extents, &extents, TextRenderer::Mode::RENDER_SURFACE);
 
 #if (DEBUG_EXTENTS)
     printf ("\n");
@@ -367,26 +398,8 @@ struct DrawUtils
       }
     double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
     double pen_x = x, pen_y = fy;
-    cairo_surface_t *glyph_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
-
-    int xx = 0;
-    for (auto glyph : glyphs)
-      {
-        unsigned char *dst = cairo_image_surface_get_data (glyph_surface);
-        auto dst_stride = cairo_image_surface_get_stride (glyph_surface);
-
-        for (int y = 0; y < glyph->bitmap_height; y++)
-          {
-            memcpy (&dst[(y + (bb_top - glyph->bitmap_top)) * dst_stride + (glyph->bitmap_left - bb_left) + xx],
-                    &glyph->bitmap[y * glyph->bitmap_width],
-                    glyph->bitmap_width);
-          }
-        xx += glyph->advance_x / 64;
-      }
-    cairo_surface_mark_dirty (glyph_surface);
-
-    double ux = (pen_x * s) + bb_left;
-    double uy = (pen_y * s) - bb_top;
+    double ux = (pen_x * s) + extents.x_bearing * s;
+    double uy = (pen_y * s) + extents.y_bearing * s;
 
     // Snap to integer device pixels
     cairo_user_to_device (cr, &ux, &uy);
