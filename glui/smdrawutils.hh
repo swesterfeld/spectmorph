@@ -4,7 +4,9 @@
 #define SPECTMORPH_DRAWUTILS_HH
 
 #include "smwidget.hh"
+#include "smconfig.hh"
 #include <map>
+#include <memory>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -31,6 +33,78 @@ struct TextExtents
   double x_advance = 0;
 //  double y_advance = 0; <- always zero
 };
+
+struct Glyph
+{
+  int bitmap_left;
+  int bitmap_top;
+  int bitmap_width;
+  int bitmap_height;
+  std::vector<uint8_t> bitmap;
+  double advance_x;
+};
+
+class TextRenderer {
+  std::unique_ptr<Config>               cfg;
+  bool                                  ft_init_ok = false;
+  FT_Library                            ft_library;
+
+  bool
+  load_font (FT_Face *out_face, bool bold) const
+  {
+    std::string filename = sm_get_install_dir (INSTALL_DIR_FONTS);
+    if (bold)
+      filename += "/dejavu-lgc-sans-bold.ttf";
+    else
+      filename += "/dejavu-lgc-sans.ttf";
+
+    if (bold) /* config file overrides built-in defaults */
+      {
+        if (cfg->font_bold() != "")
+          filename = cfg->font_bold();
+      }
+    else
+      {
+        if (cfg->font() != "")
+          filename = cfg->font();
+      }
+
+    if (FT_New_Face (ft_library, filename.c_str(), 0, out_face) == 0)
+      {
+        sm_debug ("found font %s\n", filename.c_str());
+        return true;
+      }
+    else
+      {
+        sm_debug ("error loading font %s\n", filename.c_str());
+        return false;
+      }
+  }
+public:
+  static TextRenderer *
+  the()
+  {
+    static TextRenderer *instance = new TextRenderer(); /* TODO: cleanup */
+    return instance;
+  }
+  TextRenderer() :
+    cfg (new Config())
+  {
+    ft_init_ok = (FT_Init_FreeType (&ft_library) == 0);
+
+    if (ft_init_ok)
+      {
+        load_font (&face,      false);  /* normal */
+        load_font (&face_bold, true);   /* bold */
+      }
+  }
+
+  FT_Face face {};
+  FT_Face face_bold {};
+  std::map<FT_UInt, Glyph *> glyph_cache;
+  std::map<FT_UInt, Glyph *> glyph_cache_bold;
+};
+
 
 struct DrawUtils
 {
@@ -114,24 +188,7 @@ struct DrawUtils
 
     select_font_face (bold);
 
-    static bool init = false;
-    static FT_Library ft_library;
-    static FT_Face face;
-    if (!init)
-      {
-      // Initialize FreeType
-        if (FT_Init_FreeType(&ft_library)) {
-            fprintf(stderr, "Could not init FreeType\n");
-            return;
-        }
-
-        // Load TTF font face
-        if (FT_New_Face(ft_library, "/usr/local/spectmorph/share/spectmorph/fonts/dejavu-lgc-sans.ttf", 0, &face)) {
-            fprintf(stderr, "Could not open font file\n");
-            return;
-        }
-        init = true;
-      }
+    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face;
 
 #if DEBUG_EXTENTS
     cairo_font_extents_t font_extents_cairo;
@@ -156,16 +213,7 @@ struct DrawUtils
     mat.yx = 0.0;
     cairo_set_matrix (cr, &mat);
 
-    struct Glyph {
-      int bitmap_left;
-      int bitmap_top;
-      int bitmap_width;
-      int bitmap_height;
-      std::vector<uint8_t> bitmap;
-      double advance_x;
-      cairo_surface_t *surface;
-    };
-    static std::map<FT_UInt, Glyph *> glyph_cache;
+    std::map<FT_UInt, Glyph *>& glyph_cache = bold ? TextRenderer::the()->glyph_cache_bold : TextRenderer::the()->glyph_cache;
     auto text32 = to_utf32 (text);
     std::vector<Glyph *> glyphs;
     int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
