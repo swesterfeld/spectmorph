@@ -101,8 +101,13 @@ public:
 
   FT_Face face {};
   FT_Face face_bold {};
-  std::map<FT_UInt, Glyph *> glyph_cache;
-  std::map<FT_UInt, Glyph *> glyph_cache_bold;
+  std::map<std::pair<int, bool>, std::map<FT_UInt, Glyph *>> glyph_caches;
+
+  std::map<FT_UInt, Glyph *>&
+  get_glyph_cache (double size, bool bold)
+  {
+    return glyph_caches[std::make_pair (lrint (size * 64), bold)];
+  }
 };
 
 
@@ -206,6 +211,10 @@ struct DrawUtils
 
     double s = (mat.xx + mat.yy) / 2;
 
+    // Set font size (pixels)
+    FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
+    std::map<FT_UInt, Glyph *>& glyph_cache = TextRenderer::the()->get_glyph_cache (11 * s, bold);
+
     // zero out scale/skew
     mat.xx = 1.0;
     mat.yy = 1.0;
@@ -213,7 +222,6 @@ struct DrawUtils
     mat.yx = 0.0;
     cairo_set_matrix (cr, &mat);
 
-    std::map<FT_UInt, Glyph *>& glyph_cache = bold ? TextRenderer::the()->glyph_cache_bold : TextRenderer::the()->glyph_cache;
     auto text32 = to_utf32 (text);
     std::vector<Glyph *> glyphs;
     int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
@@ -225,9 +233,6 @@ struct DrawUtils
           {
             Glyph *glyph = new Glyph();
             glyph_cache[glyph_index] = glyph;
-
-            // Set font size (pixels)
-            FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
 
             // Load and render glyph
             if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
