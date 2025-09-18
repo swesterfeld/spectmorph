@@ -13,6 +13,15 @@ namespace SpectMorph
 
 #define DEBUG_EXTENTS 0
 
+struct FontExtents
+{
+  double ascent = 0;
+  double descent = 0;
+  double height = 0;
+  double max_x_advance = 0;
+//  double max_y_advance = 0; <- always zero
+};
+
 struct TextExtents
 {
   double x_bearing = 0;
@@ -20,7 +29,7 @@ struct TextExtents
   double width = 0;
   double height = 0;
   double x_advance = 0;
-  double y_advance = 0;
+//  double y_advance = 0; <- always zero
 };
 
 struct DrawUtils
@@ -105,11 +114,6 @@ struct DrawUtils
 
     select_font_face (bold);
 
-    cairo_font_extents_t font_extents;
-    cairo_font_extents (cr, &font_extents);
-
-    TextExtents extents;
-
     static bool init = false;
     static FT_Library ft_library;
     static FT_Face face;
@@ -130,8 +134,11 @@ struct DrawUtils
       }
 
 #if DEBUG_EXTENTS
-    cairo_text_extents_t cairo_extents;
-    cairo_text_extents (cr, text.c_str(), &cairo_extents);
+    cairo_font_extents_t font_extents_cairo;
+    cairo_font_extents (cr, &font_extents_cairo);
+
+    cairo_text_extents_t extents_cairo;
+    cairo_text_extents (cr, text.c_str(), &extents_cairo);
 #endif
 
     // Use simple matrix while font rendering
@@ -218,19 +225,33 @@ struct DrawUtils
     int bb_width = bb_right - bb_left;
     int bb_height = bb_bottom + bb_top;
 
+    TextExtents extents;
     extents.x_bearing = bb_left / s;
     extents.y_bearing = -bb_top / s;
     extents.width = bb_width / s;
     extents.height = bb_height / s;
     extents.x_advance = bb_pen_x / s;
 
+    FontExtents font_extents;
+    font_extents.ascent = face->size->metrics.ascender / 64.0 / s;
+    font_extents.descent = -face->size->metrics.descender / 64.0 / s;
+    font_extents.height = face->size->metrics.height / 64.0 / s;
+    font_extents.max_x_advance = face->size->metrics.max_advance / 64.0 / s;
+
 #if (DEBUG_EXTENTS)
-    printf ("x_bearing %f %f\n", extents.x_bearing, cairo_extents.x_bearing);
-    printf ("y_bearing %f %f\n", extents.y_bearing, cairo_extents.y_bearing);
-    printf ("width %f %f\n", extents.width, cairo_extents.width);
-    printf ("height %f %f\n", extents.height, cairo_extents.height);
-    printf ("x_advance %f %f\n", extents.x_advance, cairo_extents.x_advance);
-    printf ("y_advance %f %f\n", extents.y_advance, cairo_extents.y_advance);
+    printf ("\n");
+    printf ("x_bearing %f %f\n", extents.x_bearing, extents_cairo.x_bearing);
+    printf ("y_bearing %f %f\n", extents.y_bearing, extents_cairo.y_bearing);
+    printf ("width %f %f\n", extents.width, extents_cairo.width);
+    printf ("height %f %f\n", extents.height, extents_cairo.height);
+    printf ("x_advance %f %f\n", extents.x_advance, extents_cairo.x_advance);
+    // printf ("y_advance %f %f\n", extents.y_advance, extents_cairo.y_advance);
+    printf ("\n");
+    printf ("ascent %f %f\n", font_extents.ascent, font_extents_cairo.ascent);
+    printf ("descent %f %f\n", font_extents.descent, font_extents_cairo.descent);
+    printf ("height %f %f\n", font_extents.height, font_extents_cairo.height);
+    printf ("max_x_advance %f %f\n", font_extents.max_x_advance, font_extents_cairo.max_x_advance);
+    // printf ("max_y_advance %f %f\n", font_extents.max_y_advance, font_extents_cairo.max_y_advance);
 #endif
 
     if (orientation == Orientation::HORIZONTAL)
