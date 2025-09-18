@@ -41,7 +41,7 @@ struct Glyph
   int bitmap_width;
   int bitmap_height;
   std::vector<uint8_t> bitmap;
-  double advance_x;
+  int advance_x;
 };
 
 class TextRenderer {
@@ -174,7 +174,7 @@ public:
                   glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
               }
 
-            glyph->advance_x = g->advance.x;
+            glyph->advance_x = g->advance.x >> 6;
             glyph->bitmap_left = g->bitmap_left;
             glyph->bitmap_top = g->bitmap_top;
             glyph->bitmap_width = bmp->width;
@@ -204,7 +204,7 @@ public:
                 bb_bottom = std::max (bb_bottom, glyph->bitmap_height - glyph->bitmap_top);
               }
           }
-        bb_pen_x += glyph->advance_x / 64;
+        bb_pen_x += glyph->advance_x;
       }
 
     int bb_width = bb_right - bb_left;
@@ -247,7 +247,7 @@ public:
             dst += dst_stride;
             src += src_width;
           }
-        xx += glyph->advance_x / 64;
+        xx += glyph->advance_x;
       }
     cairo_surface_mark_dirty (glyph_surface);
 
