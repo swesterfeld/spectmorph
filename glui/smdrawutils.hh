@@ -236,12 +236,16 @@ public:
       {
         unsigned char *dst = cairo_image_surface_get_data (glyph_surface);
         auto dst_stride = cairo_image_surface_get_stride (glyph_surface);
+        unsigned char *src = glyph->bitmap.data();
+        auto src_width = glyph->bitmap_width;
+
+        dst += (bb_top - glyph->bitmap_top) * dst_stride + (glyph->bitmap_left - bb_left) + xx;
 
         for (int y = 0; y < glyph->bitmap_height; y++)
           {
-            memcpy (&dst[(y + (bb_top - glyph->bitmap_top)) * dst_stride + (glyph->bitmap_left - bb_left) + xx],
-                    &glyph->bitmap[y * glyph->bitmap_width],
-                    glyph->bitmap_width);
+            memcpy (dst, src, src_width);
+            dst += dst_stride;
+            src += src_width;
           }
         xx += glyph->advance_x / 64;
       }
