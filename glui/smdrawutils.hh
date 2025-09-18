@@ -94,12 +94,12 @@ public:
 
     if (ft_init_ok)
       {
-        load_font (&face,      false);  /* normal */
-        load_font (&face_bold, true);   /* bold */
+        load_font (&face_normal, false);  /* normal */
+        load_font (&face_bold,   true);   /* bold */
       }
   }
 
-  FT_Face face {};
+  FT_Face face_normal {};
   FT_Face face_bold {};
   std::map<std::pair<int, bool>, std::map<FT_UInt, Glyph *>> glyph_caches;
 
@@ -128,6 +128,47 @@ public:
   clear_cache()
   {
     glyph_caches.clear();
+  }
+
+  std::vector<Glyph *>
+  text_to_glyphs (double font_size, bool bold, const std::string& text)
+  {
+    FT_Face face = bold ? face_bold : face_normal;
+
+    auto& glyph_cache = get_glyph_cache (font_size, bold);
+    std::vector<Glyph *> glyphs;
+    auto text32 = to_utf32 (text);
+    for (auto p : text32)
+      {
+        FT_UInt glyph_index = FT_Get_Char_Index (face, p);
+        if (!glyph_cache[glyph_index])
+          {
+            Glyph *glyph = new Glyph();
+            glyph_cache[glyph_index] = glyph;
+
+            // Load and render glyph
+            if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
+                continue; // skip on error
+            }
+            FT_GlyphSlot g = face->glyph;
+            FT_Bitmap *bmp = &g->bitmap;
+
+            for (int y = 0; y < bmp->rows; y++)
+              {
+                for (int x = 0; x < bmp->width; x++)
+                  glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
+              }
+
+            glyph->advance_x = g->advance.x;
+            glyph->bitmap_left = g->bitmap_left;
+            glyph->bitmap_top = g->bitmap_top;
+            glyph->bitmap_width = bmp->width;
+            glyph->bitmap_height = bmp->rows;
+            // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
+          }
+        glyphs.push_back (glyph_cache[glyph_index]);
+      }
+    return glyphs;
   }
 };
 
@@ -214,7 +255,7 @@ struct DrawUtils
 
     select_font_face (bold);
 
-    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face;
+    FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face_normal;
 
 #if DEBUG_EXTENTS
     cairo_font_extents_t font_extents_cairo;
@@ -234,7 +275,6 @@ struct DrawUtils
 
     // Set font size (pixels)
     FT_Set_Char_Size (face, 0, lrint (11 * 64 * s), 0, 0);
-    std::map<FT_UInt, Glyph *>& glyph_cache = TextRenderer::the()->get_glyph_cache (11 * s, bold);
 
     // zero out scale/skew
     mat.xx = 1.0;
@@ -243,40 +283,12 @@ struct DrawUtils
     mat.yx = 0.0;
     cairo_set_matrix (cr, &mat);
 
-    auto text32 = to_utf32 (text);
-    std::vector<Glyph *> glyphs;
+    std::vector<Glyph *> glyphs = TextRenderer::the()->text_to_glyphs (s, bold, text);
+
     int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
     bool first = true;
-    for (auto p : text32)
+    for (auto glyph : glyphs)
       {
-        FT_UInt glyph_index = FT_Get_Char_Index (face, p);
-        if (!glyph_cache[glyph_index])
-          {
-            Glyph *glyph = new Glyph();
-            glyph_cache[glyph_index] = glyph;
-
-            // Load and render glyph
-            if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
-                continue; // skip on error
-            }
-            FT_GlyphSlot g = face->glyph;
-            FT_Bitmap *bmp = &g->bitmap;
-
-            for (int y = 0; y < bmp->rows; y++)
-              {
-                for (int x = 0; x < bmp->width; x++)
-                  glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
-              }
-
-            glyph->advance_x = g->advance.x;
-            glyph->bitmap_left = g->bitmap_left;
-            glyph->bitmap_top = g->bitmap_top;
-            glyph->bitmap_width = bmp->width;
-            glyph->bitmap_height = bmp->rows;
-            // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
-          }
-        glyphs.push_back (glyph_cache[glyph_index]);
-        auto glyph = glyphs.back();
         if (!glyph->bitmap.empty()) // only use visible glyphs to compute bounding box, assume left->right order
           {
             if (first)
