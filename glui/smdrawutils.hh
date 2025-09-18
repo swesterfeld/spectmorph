@@ -326,13 +326,12 @@ struct DrawUtils
         TextAlign align = TextAlign::LEFT, Orientation orientation = Orientation::HORIZONTAL)
   {
     // draw label
-    cairo_set_font_size (cr, 11.0);
-
-    select_font_face (bold);
-
     FT_Face face = bold ? TextRenderer::the()->face_bold : TextRenderer::the()->face_normal;
 
 #if DEBUG_EXTENTS
+    cairo_set_font_size (cr, 11.0);
+    select_font_face (bold);
+
     cairo_font_extents_t font_extents_cairo;
     cairo_font_extents (cr, &font_extents_cairo);
 
