@@ -81,9 +81,9 @@ class TextRenderer {
         return false;
       }
   }
-  std::map<std::pair<int, bool>, std::unordered_map<FT_UInt, Glyph *>> glyph_caches;
+  std::map<std::pair<int, bool>, std::unordered_map<char32_t, Glyph *>> glyph_caches;
 
-  std::unordered_map<FT_UInt, Glyph *>&
+  std::unordered_map<char32_t, Glyph *>&
   get_glyph_cache (double size, bool bold)
   {
     return glyph_caches[std::make_pair (lrint (size * 64), bold)];
@@ -153,17 +153,17 @@ public:
     auto& glyph_cache = get_glyph_cache (font_size * ui_scaling, bold);
     std::vector<Glyph *> glyphs;
     auto text32 = to_utf32 (text);
-    for (auto p : text32)
+    for (auto char32 : text32)
       {
-        FT_UInt glyph_index = FT_Get_Char_Index (face, p);
-        Glyph *glyph = glyph_cache[glyph_index];
+        Glyph *glyph = glyph_cache[char32];
         if (!glyph)
           {
             glyph = new Glyph();
-            glyph_cache[glyph_index] = glyph;
+            glyph_cache[char32] = glyph;
 
+            FT_UInt glyph_index = FT_Get_Char_Index (face, char32);
             // Load and render glyph
-            if (FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER)) {
+            if (FT_Load_Glyph (face, glyph_index, FT_LOAD_RENDER)) {
                 continue; // skip on error
             }
             FT_GlyphSlot g = face->glyph;
