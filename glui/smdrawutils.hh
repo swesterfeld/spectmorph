@@ -108,6 +108,27 @@ public:
   {
     return glyph_caches[std::make_pair (lrint (size * 64), bold)];
   }
+
+  size_t
+  estimate_cache_size()
+  {
+    size_t size = 0;
+    for (auto& cache : glyph_caches)
+      {
+        for (auto& cache_entry : cache.second)
+          {
+            Glyph *glyph = cache_entry.second;
+            size += sizeof (Glyph) + glyph->bitmap.size();
+          }
+      }
+    return size;
+  }
+
+  void
+  clear_cache()
+  {
+    glyph_caches.clear();
+  }
 };
 
 
@@ -252,6 +273,7 @@ struct DrawUtils
             glyph->bitmap_top = g->bitmap_top;
             glyph->bitmap_width = bmp->width;
             glyph->bitmap_height = bmp->rows;
+            // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
           }
         glyphs.push_back (glyph_cache[glyph_index]);
         auto glyph = glyphs.back();
