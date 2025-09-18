@@ -81,9 +81,9 @@ class TextRenderer {
         return false;
       }
   }
-  std::map<std::pair<int, bool>, std::map<FT_UInt, Glyph *>> glyph_caches;
+  std::map<std::pair<int, bool>, std::unordered_map<FT_UInt, Glyph *>> glyph_caches;
 
-  std::map<FT_UInt, Glyph *>&
+  std::unordered_map<FT_UInt, Glyph *>&
   get_glyph_cache (double size, bool bold)
   {
     return glyph_caches[std::make_pair (lrint (size * 64), bold)];
@@ -156,9 +156,10 @@ public:
     for (auto p : text32)
       {
         FT_UInt glyph_index = FT_Get_Char_Index (face, p);
-        if (!glyph_cache[glyph_index])
+        Glyph *glyph = glyph_cache[glyph_index];
+        if (!glyph)
           {
-            Glyph *glyph = new Glyph();
+            glyph = new Glyph();
             glyph_cache[glyph_index] = glyph;
 
             // Load and render glyph
@@ -181,7 +182,7 @@ public:
             glyph->bitmap_height = bmp->rows;
             // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
           }
-        glyphs.push_back (glyph_cache[glyph_index]);
+        glyphs.push_back (glyph);
       }
     int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
     bool first = true;
