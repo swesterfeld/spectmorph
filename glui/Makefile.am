@@ -34,7 +34,7 @@ SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smdrawutils.cc smrenameopwindow.cc smmorphwavsourceview.cc \
 	 smtimer.cc smshortcut.cc smparamlabel.cc smeventloop.cc \
 	 sminsteditwindow.cc smlineedit.cc smmorphkeytrackview.cc \
-	 smmorphcurvewidget.cc smmorphenvelopeview.cc
+	 smmorphcurvewidget.cc smmorphenvelopeview.cc smtextrenderer.cc
 
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
@@ -54,7 +54,8 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smvoicestatus.hh smpathdialog.hh smloadstereodialog.hh \
 	 smbankeditwindow.hh smcreatebankwindow.hh smclickablelabel.hh \
 	 sminsteditvolume.hh smvumeter.hh smvolumeresetdialog.hh \
-	 smmorphkeytrackview.hh smmorphcurvewidget.hh smmorphenvelopeview.hh
+	 smmorphkeytrackview.hh smmorphcurvewidget.hh smmorphenvelopeview.hh \
+	 smtextrenderer.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
