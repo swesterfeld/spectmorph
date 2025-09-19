@@ -98,7 +98,6 @@ struct DrawUtils
     cairo_text_extents (cr, text.c_str(), &extents_cairo);
 #endif
 
-    // Use simple matrix while font rendering
     cairo_save (cr);
 
     cairo_matrix_t mat;
@@ -106,17 +105,10 @@ struct DrawUtils
 
     double s = (mat.xx + mat.yy) / 2;
 
-    // zero out scale/skew
-    mat.xx = 1.0;
-    mat.yy = 1.0;
-    mat.xy = 0.0;
-    mat.yx = 0.0;
-    cairo_set_matrix (cr, &mat);
-
     TextExtents extents;
     FontExtents font_extents;
 
-    cairo_surface_t *glyph_surface = TextRenderer::the()->text_to_surface (s, bold, text, &font_extents, &extents, TextRenderer::Mode::RENDER_SURFACE);
+    cairo_surface_t *text_surface = TextRenderer::the()->text_to_surface (s, bold, text, &font_extents, &extents, TextRenderer::Mode::RENDER_SURFACE);
 
 #if (DEBUG_EXTENTS)
     printf ("\n");
@@ -136,87 +128,53 @@ struct DrawUtils
 
     if (orientation == Orientation::HORIZONTAL)
       {
-#if 0
-        double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
-#endif
-        switch (align)
-          {
-#if 0
-            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
-                                    break;
-            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
-                                    break;
-            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
-                                    break;
-#endif
-            case TextAlign::LEFT:   /* nothing */
-                                    break;
-            case TextAlign::CENTER: x += (width / 2) - extents.x_bearing - extents.width / 2;
-                                    break;
-            case TextAlign::RIGHT:  x += width - extents.x_bearing - extents.width;
-                                    break;
-          }
-        //cairo_show_text (cr, text.c_str());
-      }
-    double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
-    double pen_x = x, pen_y = fy;
-    double ux = (pen_x * s) + extents.x_bearing * s;
-    double uy = (pen_y * s) + extents.y_bearing * s;
-
-    // Snap to integer device pixels
-    cairo_user_to_device (cr, &ux, &uy);
-    ux = round (ux);
-    uy = round (uy);
-    cairo_device_to_user (cr, &ux, &uy);
-
-    cairo_mask_surface (cr, glyph_surface, ux, uy);
-    cairo_surface_destroy (glyph_surface);
-
-    cairo_restore (cr);
-
-#if 0
-    // draw label
-    cairo_set_font_size (cr, 11.0);
-    select_font_face (bold);
-
-    cairo_font_extents_t font_extents;
-    cairo_font_extents (cr, &font_extents);
-
-    cairo_text_extents_t extents;
-    cairo_text_extents (cr, text.c_str(), &extents);
-
-    if (orientation == Orientation::HORIZONTAL)
-      {
         double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
         switch (align)
           {
-            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
+            case TextAlign::LEFT:   cairo_translate (cr, x, fy);
                                     break;
-            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
+            case TextAlign::CENTER: cairo_translate (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
                                     break;
-            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
+            case TextAlign::RIGHT:  cairo_translate (cr, x + width - extents.x_bearing - extents.width, fy);
                                     break;
           }
-        cairo_show_text (cr, text.c_str());
       }
     else
       {
         double fx = x + width / 2 + font_extents.height / 2 - font_extents.descent;
         switch (align)
           {
-            case TextAlign::LEFT:   cairo_move_to (cr, fx, y + height);
+            case TextAlign::LEFT:   cairo_translate (cr, fx, y + height);
                                     break;
-            case TextAlign::CENTER: cairo_move_to (cr, fx, y + height / 2 + extents.x_bearing + extents.width / 2);
+            case TextAlign::CENTER: cairo_translate (cr, fx, y + height / 2 + extents.x_bearing + extents.width / 2);
                                     break;
-            case TextAlign::RIGHT:  cairo_move_to (cr, fx, y + extents.x_bearing + extents.width);
+            case TextAlign::RIGHT:  cairo_translate (cr, fx, y + extents.x_bearing + extents.width);
                                     break;
-        }
-        cairo_save (cr);
-        cairo_rotate (cr, -M_PI / 2);
-        cairo_show_text (cr, text.c_str());
-        cairo_restore (cr);
+          }
       }
-#endif
+    // use simple matrix (no scaling) for drawing text_surface
+    cairo_get_matrix (cr, &mat);
+    mat.xx = 1.0;
+    mat.yy = 1.0;
+    mat.xy = 0.0;
+    mat.yx = 0.0;
+    cairo_set_matrix (cr, &mat);
+
+    if (orientation == Orientation::VERTICAL)
+      cairo_rotate (cr, -M_PI / 2);
+
+    double ux = extents.x_bearing * s, uy = extents.y_bearing * s;
+
+    // snap to integer device pixels
+    cairo_user_to_device (cr, &ux, &uy);
+    ux = round (ux);
+    uy = round (uy);
+    cairo_device_to_user (cr, &ux, &uy);
+
+    cairo_mask_surface (cr, text_surface, ux, uy);
+    cairo_surface_destroy (text_surface);
+
+    cairo_restore (cr);
   }
   TextExtents
   text_extents (const std::string& text)
