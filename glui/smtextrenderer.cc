@@ -186,6 +186,8 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const std::string& 
   auto& glyph_cache = get_glyph_cache (font_size * ui_scaling, bold);
   std::vector<Glyph *> glyphs;
   auto text32 = to_utf32 (text);
+
+  glyphs.reserve (text32.size());
   for (auto char32 : text32)
     {
       Glyph *glyph = glyph_cache[char32];
