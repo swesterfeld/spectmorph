@@ -145,6 +145,18 @@ public:
     std::lock_guard lg (mutex);
 
     FT_Face face = bold ? face_bold : face_normal;
+    if (!face)
+      {
+        if (font_extents)
+          *font_extents = FontExtents();
+        if (extents)
+          *extents = TextExtents();
+
+        if (mode == Mode::EXTENTS_ONLY)
+          return nullptr;
+        else
+          return cairo_image_surface_create (CAIRO_FORMAT_A8, 0, 0);
+      }
 
     // Set font size (pixels)
     constexpr double font_size = 11.0;
