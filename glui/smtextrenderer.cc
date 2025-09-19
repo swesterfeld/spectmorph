@@ -2,9 +2,57 @@
 
 #include "smtextrenderer.hh"
 
+#include <fontconfig/fontconfig.h>
+
 #include <math.h>
 
 using namespace SpectMorph;
+
+using std::string;
+
+// Helper: find a font file for a family + style string using fontconfig
+static string
+find_font_file (const string& desc)
+{
+  if (!FcInit())
+    {
+      fprintf (stderr, "fontconfig init failed\n");
+      return "";
+    }
+  FcPattern *pattern = FcNameParse ((const FcChar8 *)desc.c_str());
+  if (!pattern)
+    {
+      fprintf (stderr, "failed to parse fontconfig pattern: %s\n", desc.c_str());
+      return "";
+    }
+
+  FcConfigSubstitute (NULL, pattern, FcMatchPattern);
+  FcDefaultSubstitute (pattern);
+
+  FcResult result;
+  FcPattern *match = FcFontMatch (NULL, pattern, &result);
+  FcPatternDestroy (pattern);
+
+  if (!match)
+    {
+      fprintf(stderr, "no match for fontconfig pattern: %s\n", desc.c_str());
+      return "";
+    }
+
+  FcChar8 *file = NULL;
+  if (FcPatternGetString (match, FC_FILE, 0, &file) != FcResultMatch)
+    {
+      fprintf (stderr, "no fontconfig file property for: %s\n", desc.c_str());
+      FcPatternDestroy (match);
+      return "";
+    }
+
+  // Duplicate the filename so we can free the pattern
+  string filename = (const char *)file;
+  FcPatternDestroy (match);
+
+  return filename;
+}
 
 bool
 TextRenderer::load_font (FT_Face *out_face, bool bold) const
@@ -31,11 +79,19 @@ TextRenderer::load_font (FT_Face *out_face, bool bold) const
       sm_debug ("found font %s\n", filename.c_str());
       return true;
     }
+  sm_debug ("error loading font %s\n", filename.c_str());
+
+  if (bold)
+    filename = find_font_file ("DejaVu Sans:style=Bold");
   else
+    filename = find_font_file ("DejaVu Sans:style=Regular");
+
+  if (FT_New_Face (ft_library, filename.c_str(), 0, out_face) == 0)
     {
-      sm_debug ("error loading font %s\n", filename.c_str());
-      return false;
+      sm_debug ("found font using fontconfig %s\n", filename.c_str());
+      return true;
     }
+  return false;
 }
 
 std::unordered_map<char32_t, Glyph *>&
