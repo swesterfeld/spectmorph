@@ -12,8 +12,10 @@ using std::string;
 
 // Helper: find a font file for a family + style string using fontconfig
 static string
-find_font_file (const string& desc)
+find_font_file (const string& family, bool bold, bool exact)
 {
+  string desc = family + ":style=" + (bold ? "Bold" : "Regular");
+
   if (!FcInit())
     {
       fprintf (stderr, "fontconfig init failed\n");
@@ -38,6 +40,21 @@ find_font_file (const string& desc)
       fprintf(stderr, "no match for fontconfig pattern: %s\n", desc.c_str());
       return "";
     }
+  // if asked for an exact match, fail if familty doesn't match requested family
+  if (exact)
+    {
+      FcChar8 *match_family = NULL;
+      if (FcPatternGetString (match, FC_FAMILY, 0, &match_family) == FcResultMatch)
+        {
+          string match_family_str = (char *)match_family;
+          if (match_family_str != family)
+            {
+              FcPatternDestroy (match);
+              return "";
+            }
+        }
+    }
+
 
   FcChar8 *file = NULL;
   if (FcPatternGetString (match, FC_FILE, 0, &file) != FcResultMatch)
@@ -81,10 +98,9 @@ TextRenderer::load_font (FT_Face *out_face, bool bold) const
     }
   sm_debug ("error loading font %s\n", filename.c_str());
 
-  if (bold)
-    filename = find_font_file ("DejaVu Sans:style=Bold");
-  else
-    filename = find_font_file ("DejaVu Sans:style=Regular");
+  filename = find_font_file ("DejaVu Sans", bold, /* exact */ true);
+  if (filename == "")
+    filename = find_font_file ("sans-serif", bold, /* exact */ false);
 
   if (FT_New_Face (ft_library, filename.c_str(), 0, out_face) == 0)
     {
