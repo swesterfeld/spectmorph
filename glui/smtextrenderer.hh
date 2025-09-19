@@ -34,16 +34,6 @@ struct TextExtents
 //  double y_advance = 0; <- always zero
 };
 
-struct Glyph
-{
-  int bitmap_left;
-  int bitmap_top;
-  int bitmap_width;
-  int bitmap_height;
-  std::vector<uint8_t> bitmap;
-  int advance_x;
-};
-
 class TextRenderer {
   std::mutex                            mutex;
   std::unique_ptr<Config>               cfg;
@@ -52,10 +42,20 @@ class TextRenderer {
   FT_Face                               face_normal {};
   FT_Face                               face_bold {};
 
-  std::map<std::pair<int, bool>, std::unordered_map<char32_t, Glyph *>> glyph_caches;
+  struct Glyph
+  {
+    int bitmap_left;
+    int bitmap_top;
+    int bitmap_width;
+    int bitmap_height;
+    std::vector<uint8_t> bitmap;
+    int advance_x;
+  };
+
+  std::map<std::pair<int, bool>, std::unordered_map<char32_t, std::unique_ptr<Glyph>>> glyph_caches;
 
   bool load_font (FT_Face *out_face, bool bold) const;
-  std::unordered_map<char32_t, Glyph *>& get_glyph_cache (double size, bool bold);
+  std::unordered_map<char32_t, std::unique_ptr<Glyph>>& get_glyph_cache (double size, bool bold);
 
 public:
   static TextRenderer *the(); /* TODO: cleanup */

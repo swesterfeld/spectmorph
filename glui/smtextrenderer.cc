@@ -9,6 +9,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 // Helper: find a font file for a family + style string using fontconfig
 static string
@@ -74,7 +75,7 @@ find_font_file (const string& family, bool bold, bool exact)
 bool
 TextRenderer::load_font (FT_Face *out_face, bool bold) const
 {
-  std::string filename = sm_get_install_dir (INSTALL_DIR_FONTS);
+  string filename = sm_get_install_dir (INSTALL_DIR_FONTS);
   if (bold)
     filename += "/dejavu-lgc-sans-bold.ttf";
   else
@@ -110,7 +111,7 @@ TextRenderer::load_font (FT_Face *out_face, bool bold) const
   return false;
 }
 
-std::unordered_map<char32_t, Glyph *>&
+std::unordered_map<char32_t, std::unique_ptr<TextRenderer::Glyph>>&
 TextRenderer::get_glyph_cache (double size, bool bold)
 {
   return glyph_caches[std::make_pair (lrint (size * 64), bold)];
@@ -145,7 +146,7 @@ TextRenderer::estimate_cache_size()
     {
       for (auto& cache_entry : cache.second)
         {
-          Glyph *glyph = cache_entry.second;
+          auto& glyph = cache_entry.second;
           size += sizeof (Glyph) + glyph->bitmap.size();
         }
     }
@@ -161,7 +162,7 @@ TextRenderer::clear_cache()
 }
 
 cairo_surface_t *
-TextRenderer::text_to_surface (double ui_scaling, bool bold, const std::string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
+TextRenderer::text_to_surface (double ui_scaling, bool bold, const string& text, FontExtents *font_extents, TextExtents *extents, Mode mode)
 {
   std::lock_guard lg (mutex);
 
@@ -184,17 +185,16 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const std::string& 
   FT_Set_Char_Size (face, 0, lrint (font_size * 64 * ui_scaling), 0, 0);
 
   auto& glyph_cache = get_glyph_cache (font_size * ui_scaling, bold);
-  std::vector<Glyph *> glyphs;
+  vector<Glyph *> glyphs;
   auto text32 = to_utf32 (text);
 
   glyphs.reserve (text32.size());
   for (auto char32 : text32)
     {
-      Glyph *glyph = glyph_cache[char32];
-      if (!glyph)
+      auto& cached_glyph = glyph_cache[char32];
+      if (!cached_glyph)
         {
-          glyph = new Glyph();
-          glyph_cache[char32] = glyph;
+          cached_glyph = std::make_unique<Glyph>();
 
           FT_UInt glyph_index = FT_Get_Char_Index (face, char32);
           // Load and render glyph
@@ -207,17 +207,17 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const std::string& 
           for (int y = 0; y < bmp->rows; y++)
             {
               for (int x = 0; x < bmp->width; x++)
-                glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
+                cached_glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
             }
 
-          glyph->advance_x = g->advance.x >> 6;
-          glyph->bitmap_left = g->bitmap_left;
-          glyph->bitmap_top = g->bitmap_top;
-          glyph->bitmap_width = bmp->width;
-          glyph->bitmap_height = bmp->rows;
+          cached_glyph->advance_x = g->advance.x >> 6;
+          cached_glyph->bitmap_left = g->bitmap_left;
+          cached_glyph->bitmap_top = g->bitmap_top;
+          cached_glyph->bitmap_width = bmp->width;
+          cached_glyph->bitmap_height = bmp->rows;
           // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
         }
-      glyphs.push_back (glyph);
+      glyphs.push_back (cached_glyph.get());
     }
   int bb_left = 0, bb_top = 0, bb_right = 0, bb_bottom = 0, bb_pen_x = 0;
   bool first = true;
