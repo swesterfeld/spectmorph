@@ -362,33 +362,6 @@ zero_float_block (size_t n_values, float *values)
   memset (values, 0, n_values * sizeof (float));
 }
 
-inline float
-int_sinf (guint8 i)
-{
-  extern float *int_sincos_table;
-
-  return int_sincos_table[i];
-}
-
-inline float
-int_cosf (guint8 i)
-{
-  extern float *int_sincos_table;
-
-  i += 64;
-  return int_sincos_table[i];
-}
-
-inline void
-int_sincos_init()
-{
-  extern float *int_sincos_table;
-
-  int_sincos_table = (float *) malloc (sizeof (float) * 256);
-  for (int i = 0; i < 256; i++)
-    int_sincos_table[i] = sin (double (i / 256.0) * 2 * M_PI);
-}
-
 /* --- signal processing: windows --- */
 
 inline double
@@ -486,6 +459,8 @@ struct MathTables
 
   static float ifreq2f_high[256];
   static float ifreq2f_low[256];
+
+  static float int_sincos[256];
 };
 
 #define SM_IDB_CONST_M96 uint16_t ((512 - 96) * 64)
@@ -526,6 +501,19 @@ sm_factor2idb (float factor)
 }
 
 void sm_factor2idbs (float *factors, uint n_factors, uint16_t *out);
+
+inline float
+int_sinf (guint8 i)
+{
+  return MathTables::int_sincos[i];
+}
+
+inline float
+int_cosf (guint8 i)
+{
+  i += 64;
+  return MathTables::int_sincos[i];
+}
 
 double sm_lowpass1_factor (double mix_freq, double freq);
 double sm_xparam (double x, double slope);

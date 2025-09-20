@@ -38,8 +38,6 @@ struct GlobalData
 
 static GlobalData *global_data = nullptr;
 
-float *int_sincos_table;
-
 static bool use_sse = true;
 
 void
@@ -110,7 +108,6 @@ GlobalData::GlobalData()
   for (auto area : cfg.debug())
     Debug::enable (area);
 
-  int_sincos_init();
   sm_math_init();
 
   sm_debug ("GlobalData instance created\n");

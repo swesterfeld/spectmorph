@@ -93,6 +93,8 @@ float MathTables::idb2f_low[256];
 float MathTables::ifreq2f_high[256];
 float MathTables::ifreq2f_low[256];
 
+float MathTables::int_sincos[256];
+
 void
 sm_math_init()
 {
@@ -104,6 +106,9 @@ sm_math_init()
       MathTables::ifreq2f_high[i] = sm_ifreq2freq_slow (i * 256);
       MathTables::ifreq2f_low[i]  = sm_ifreq2freq_slow (ADD + i);
     }
+
+  for (int i = 0; i < 256; i++)
+    MathTables::int_sincos[i] = sin (double (i / 256.0) * 2 * M_PI);
 
 #if defined (__i386__) && defined (__GNUC__)
   // ensure proper rounding mode
