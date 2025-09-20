@@ -77,7 +77,13 @@ struct IFFTSynthTable
 {
   std::vector<float> win_trans;
 
-  float             *win_scale;
+  float             *win_scale = nullptr;
+
+  ~IFFTSynthTable()
+  {
+    if (win_scale)
+      FFT::free_array_float (win_scale);
+  }
 };
 
 /*
