@@ -1,6 +1,7 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(LV2_CFLAGS) $(GLIB_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
+AM_CXXFLAGS += $(LV2_CFLAGS) $(GLIB_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) \
+	       -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY) $(WARN_GLOBAL_CDTORS)
 
 spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 
