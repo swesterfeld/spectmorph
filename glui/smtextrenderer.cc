@@ -198,25 +198,26 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const string& text,
 
           FT_UInt glyph_index = FT_Get_Char_Index (face, char32);
           // Load and render glyph
-          if (FT_Load_Glyph (face, glyph_index, FT_LOAD_RENDER)) {
-              continue; // skip on error
-          }
-          FT_GlyphSlot g = face->glyph;
-          FT_Bitmap *bmp = &g->bitmap;
-
-          cached_glyph->bitmap.reserve (bmp->width * bmp->rows);
-          for (int y = 0; y < bmp->rows; y++)
+          //  - on error: result is an invisible 0x0 glyph
+          FT_Error error = FT_Load_Glyph (face, glyph_index, FT_LOAD_RENDER);
+          if (!error)
             {
-              for (int x = 0; x < bmp->width; x++)
-                cached_glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
-            }
+              FT_GlyphSlot g = face->glyph;
+              FT_Bitmap *bmp = &g->bitmap;
 
-          cached_glyph->advance_x = g->advance.x >> 6;
-          cached_glyph->bitmap_left = g->bitmap_left;
-          cached_glyph->bitmap_top = g->bitmap_top;
-          cached_glyph->bitmap_width = bmp->width;
-          cached_glyph->bitmap_height = bmp->rows;
-          // printf ("cache size: %zd\n", TextRenderer::the()->estimate_cache_size());
+              cached_glyph->bitmap.reserve (bmp->width * bmp->rows);
+              for (int y = 0; y < bmp->rows; y++)
+                {
+                  for (int x = 0; x < bmp->width; x++)
+                    cached_glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
+                }
+
+              cached_glyph->advance_x = g->advance.x >> 6;
+              cached_glyph->bitmap_left = g->bitmap_left;
+              cached_glyph->bitmap_top = g->bitmap_top;
+              cached_glyph->bitmap_width = bmp->width;
+              cached_glyph->bitmap_height = bmp->rows;
+           }
         }
       glyphs.push_back (cached_glyph.get());
     }
