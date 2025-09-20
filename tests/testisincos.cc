@@ -14,7 +14,7 @@ using namespace SpectMorph;
 using std::max;
 using std::string;
 
-static double acc[2] = { 0, 0 };
+static float acc[2] = { 0, 0 };
 
 void
 perf_test()
@@ -24,8 +24,8 @@ perf_test()
   static int CALLS = 1000 * 1000 * 1000;
   for (int i = 0; i < CALLS; i++)
     {
-      const double is = int_sinf (i);
-      const double ic = int_cosf (i);
+      const float is = int_sinf (i);
+      const float ic = int_cosf (i);
 
       acc[0] += is;
       acc[1] += ic;
