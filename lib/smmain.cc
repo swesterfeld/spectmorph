@@ -26,7 +26,7 @@ struct GlobalData
   ~GlobalData();
 
   LeakDebuggerList  leak_debugger_list; /* needs to be the first member to track leaks for the other members */
-  InstEncCache      inst_enc_cache;
+  InstEncCache      inst_enc_cache;     /* don't use Singelton<> here, initialize in main thread at startup */
 
   std::thread::id   ui_thread;
   std::thread::id   dsp_thread;
