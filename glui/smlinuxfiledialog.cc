@@ -9,6 +9,7 @@
 #include "smlistbox.hh"
 #include "smcheckbox.hh"
 #include "smmessagebox.hh"
+#include "smmain.hh"
 #include <glib/gstdio.h>
 #include <map>
 
@@ -62,7 +63,33 @@ class FileDialogWindow : public Window
   string default_ext;
   map<string, FileDialogFormats::Format> filter_map;
 
-  static string last_start_directory;
+  struct Global
+  {
+    string      last_start_directory;
+    std::mutex  mutex;
+    static Global *
+    the()
+    {
+      static Singleton<Global> singleton;
+      return singleton.ptr();
+    }
+  };
+
+  void
+  set_last_start_directory (const string& s)
+  {
+    Global *g = Global::the();
+    std::lock_guard lg (g->mutex);
+    g->last_start_directory = s;
+  }
+  string
+  last_start_directory()
+  {
+    Global *g = Global::the();
+    std::lock_guard lg (g->mutex);
+
+    return g->last_start_directory;
+  }
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
     Window (*parent_window->event_loop(), title, 480, 320, 0, false, parent_window->native_window()),
@@ -176,8 +203,8 @@ public:
     grid.add_widget (root_button, 1, yoffset, 6, 3);
     yoffset += 3;
 
-    if (last_start_directory != "" && can_read_dir (last_start_directory))
-      read_directory (last_start_directory);
+    if (last_start_directory() != "" && can_read_dir (last_start_directory()))
+      read_directory (last_start_directory());
     else
       read_directory (g_get_home_dir());
   }
@@ -216,7 +243,7 @@ public:
     /* open dialog is easy */
     if (is_open_dialog)
       {
-        last_start_directory = current_directory;
+        set_last_start_directory (current_directory);
         lfd->signal_file_selected (path);
         return;
       }
@@ -245,14 +272,14 @@ public:
           {
             if (save_changes)
               {
-                last_start_directory = current_directory;
+                set_last_start_directory (current_directory);
                 lfd->signal_file_selected (path);
               }
           });
       }
     else
       {
-        last_start_directory = current_directory;
+        set_last_start_directory (current_directory);
         lfd->signal_file_selected (path);
       }
   }
@@ -350,8 +377,6 @@ public:
       }
   }
 };
-
-string FileDialogWindow::last_start_directory;
 
 }
 
