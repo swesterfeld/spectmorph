@@ -207,9 +207,9 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const string& text,
               FT_Bitmap *bmp = &g->bitmap;
 
               cached_glyph->bitmap.reserve (bmp->width * bmp->rows);
-              for (int y = 0; y < bmp->rows; y++)
+              for (uint y = 0; y < bmp->rows; y++)
                 {
-                  for (int x = 0; x < bmp->width; x++)
+                  for (uint x = 0; x < bmp->width; x++)
                     cached_glyph->bitmap.push_back (bmp->buffer[y * bmp->pitch + x]);
                 }
 
