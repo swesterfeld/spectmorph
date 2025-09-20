@@ -267,13 +267,13 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const string& text,
   if (mode == Mode::EXTENTS_ONLY)
     return nullptr;
 
-  cairo_surface_t *glyph_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
+  cairo_surface_t *text_surface = cairo_image_surface_create (CAIRO_FORMAT_A8, bb_width, bb_height);
 
   int xx = 0;
   for (auto glyph : glyphs)
     {
-      unsigned char *dst = cairo_image_surface_get_data (glyph_surface);
-      auto dst_stride = cairo_image_surface_get_stride (glyph_surface);
+      unsigned char *dst = cairo_image_surface_get_data (text_surface);
+      auto dst_stride = cairo_image_surface_get_stride (text_surface);
       unsigned char *src = glyph->bitmap.data();
       auto src_width = glyph->bitmap_width;
 
@@ -287,8 +287,8 @@ TextRenderer::text_to_surface (double ui_scaling, bool bold, const string& text,
         }
       xx += glyph->advance_x;
     }
-  cairo_surface_mark_dirty (glyph_surface);
+  cairo_surface_mark_dirty (text_surface);
 
-  return glyph_surface;
+  return text_surface;
 }
 
