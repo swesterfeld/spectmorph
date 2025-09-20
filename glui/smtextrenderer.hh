@@ -3,6 +3,7 @@
 #pragma once
 
 #include "smconfig.hh"
+#include "smmain.hh"
 #include <map>
 #include <unordered_map>
 #include <cairo.h>
@@ -58,9 +59,15 @@ class TextRenderer {
   std::unordered_map<char32_t, std::unique_ptr<Glyph>>& get_glyph_cache (double size, bool bold);
 
 public:
-  static TextRenderer *the(); /* TODO: cleanup */
+  static TextRenderer *
+  the()
+  {
+    static Singleton<TextRenderer> singleton;
+    return singleton.ptr();
+  }
 
   TextRenderer();
+  ~TextRenderer();
 
   size_t estimate_cache_size();
   void clear_cache();

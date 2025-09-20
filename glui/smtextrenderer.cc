@@ -117,13 +117,6 @@ TextRenderer::get_glyph_cache (double size, bool bold)
   return glyph_caches[std::make_pair (lrint (size * 64), bold)];
 }
 
-TextRenderer *
-TextRenderer::the()
-{
-  static TextRenderer *instance = new TextRenderer(); /* TODO: cleanup */
-  return instance;
-}
-
 TextRenderer::TextRenderer() :
   cfg (new Config())
 {
@@ -134,6 +127,14 @@ TextRenderer::TextRenderer() :
       load_font (&face_normal, false);  /* normal */
       load_font (&face_bold,   true);   /* bold */
     }
+}
+
+TextRenderer::~TextRenderer()
+{
+  /* FT_Done_...() functions are safe to call on nullptr */
+  FT_Done_Face (face_normal);
+  FT_Done_Face (face_bold);
+  FT_Done_FreeType (ft_library);
 }
 
 size_t
