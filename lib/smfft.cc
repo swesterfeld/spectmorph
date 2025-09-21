@@ -3,6 +3,7 @@
 #include "smfft.hh"
 #include "smutils.hh"
 #include "smrandom.hh"
+#include "smmain.hh"
 #include <algorithm>
 #include <map>
 #include <mutex>
@@ -27,23 +28,8 @@ FFT::debug_in_test_program (bool b)
 
 #if SPECTMORPH_HAVE_FFTW
 
+static void load_wisdom();
 static void save_wisdom();
-
-/*
- * we force that only one thread at a time will be in planning mode
- *  - fftw planner is not threadsafe
- *  - neither is our code that generates plans
- */
-static std::mutex fftw_plan_mutex;
-static std::mutex plan_map_mutex;
-
-static fftwf_plan&
-read_plan_map_threadsafe (std::map<int, fftwf_plan>& plan_map, size_t N)
-{
-  /* std::map access is not threadsafe */
-  std::lock_guard<std::mutex> lg (plan_map_mutex);
-  return plan_map[N];
-}
 
 float *
 FFT::new_array_float (size_t N)
@@ -68,7 +54,80 @@ FFT::free_array_float (float *f)
   fftwf_free (f);
 }
 
-static map<int, fftwf_plan> fftar_float_plan;
+namespace
+{
+
+class FFTGlobal
+{
+  static void
+  cleanup_plans (map<int, fftwf_plan>& plan_map)
+  {
+    if (plan_map.size())
+      {
+        if (getenv ("SPECTMORPH_MAKE_CHECK") && !fft_in_test_program)
+          {
+            fprintf (stderr, "FFT::debug_in_test_program() should be used for unit tests\n");
+            exit (1);
+          }
+      }
+    for (auto& plan_entry : plan_map)
+      fftwf_destroy_plan (plan_entry.second);
+  }
+
+public:
+  map<int, fftwf_plan> fftar_float_plan;
+  map<int, fftwf_plan> fftsr_float_plan;
+  map<int, fftwf_plan> fftsr_destructive_float_plan;
+  map<int, fftwf_plan> fftac_float_plan;
+  map<int, fftwf_plan> fftsc_float_plan;
+
+  /* We force that only one thread at a time will be in planning mode
+   *  - fftw planner is not threadsafe
+   *  - neither is our code that generates plans
+   */
+  std::mutex fftw_plan_mutex;
+
+  /* Mutex to protect the std::map access */
+  std::mutex plan_map_mutex;
+
+  fftwf_plan&
+  read_plan_map_threadsafe (std::map<int, fftwf_plan>& plan_map, size_t N)
+  {
+    /* std::map access is not threadsafe */
+    std::lock_guard<std::mutex> lg (plan_map_mutex);
+    return plan_map[N];
+  }
+
+
+  FFTGlobal()
+  {
+    /* If an "application" is structured as a set of "plugins" which are unaware
+     * of each other, we need to force a thread-safe planner to avoid crashes.
+     *
+     * As SpectMorph is to be run as plugin in many situations, we need this:
+     */
+#if SPECTMORPH_HAVE_FFTW_THREADSAFE
+    fftwf_make_planner_thread_safe();
+#endif
+    load_wisdom();
+  }
+  static FFTGlobal *
+  the()
+  {
+    static Singleton<FFTGlobal> singleton;
+    return singleton.ptr();
+  }
+  ~FFTGlobal()
+  {
+    cleanup_plans (fftar_float_plan);
+    cleanup_plans (fftsr_float_plan);
+    cleanup_plans (fftsr_destructive_float_plan);
+    cleanup_plans (fftac_float_plan);
+    cleanup_plans (fftsc_float_plan);
+  }
+};
+
+};
 
 static int
 plan_flags (FFT::PlanMode plan_mode)
@@ -91,11 +150,12 @@ plan_flags (FFT::PlanMode plan_mode)
 void
 FFT::fftar_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = read_plan_map_threadsafe (fftar_float_plan, N);
+  FFTGlobal *g = FFTGlobal::the();
+  fftwf_plan& plan = g->read_plan_map_threadsafe (g->fftar_float_plan, N);
 
   if (!plan)
     {
-      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
+      std::lock_guard<std::mutex> lg (g->fftw_plan_mutex);
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, plan_flags (plan_mode));
@@ -112,16 +172,15 @@ FFT::fftar_float (size_t N, float *in, float *out, PlanMode plan_mode)
   out[1] = out[N];
 }
 
-static map<int, fftwf_plan> fftsr_float_plan;
-
 void
 FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = read_plan_map_threadsafe (fftsr_float_plan, N);
+  FFTGlobal *g = FFTGlobal::the();
+  fftwf_plan& plan = g->read_plan_map_threadsafe (g->fftsr_float_plan, N);
 
   if (!plan)
     {
-      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
+      std::lock_guard<std::mutex> lg (g->fftw_plan_mutex);
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, plan_flags (plan_mode));
@@ -142,8 +201,6 @@ FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
   in[1] = in[N]; // we need to preserve the input array
 }
 
-static map<int, fftwf_plan> fftsr_destructive_float_plan;
-
 /*
  * This function is never RT safe, even if the plan was already generated.
  * Accessing the plan map fftsr_destructive_float_plan requires using a
@@ -152,11 +209,12 @@ static map<int, fftwf_plan> fftsr_destructive_float_plan;
 const FFT::Plan *
 FFT::plan_fftsr_destructive_float (size_t N, PlanMode plan_mode)
 {
-  fftwf_plan& plan = read_plan_map_threadsafe (fftsr_destructive_float_plan, N);
+  FFTGlobal *g = FFTGlobal::the();
+  fftwf_plan& plan = g->read_plan_map_threadsafe (g->fftsr_destructive_float_plan, N);
 
   if (!plan)
     {
-      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
+      std::lock_guard<std::mutex> lg (g->fftw_plan_mutex);
       int xplan_flags = plan_flags (plan_mode) & ~FFTW_PRESERVE_INPUT;
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
@@ -199,15 +257,14 @@ FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mod
   execute_fftsr_destructive_float (N, in, out, plan);
 }
 
-static map<int, fftwf_plan> fftac_float_plan;
-
 void
 FFT::fftac_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = read_plan_map_threadsafe (fftac_float_plan, N);
+  FFTGlobal *g = FFTGlobal::the();
+  fftwf_plan& plan = g->read_plan_map_threadsafe (g->fftac_float_plan, N);
   if (!plan)
     {
-      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
+      std::lock_guard<std::mutex> lg (g->fftw_plan_mutex);
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
 
@@ -226,15 +283,14 @@ FFT::fftac_float (size_t N, float *in, float *out, PlanMode plan_mode)
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
 }
 
-static map<int, fftwf_plan> fftsc_float_plan;
-
 void
 FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = read_plan_map_threadsafe (fftsc_float_plan, N);
+  FFTGlobal *g = FFTGlobal::the();
+  fftwf_plan& plan = g->read_plan_map_threadsafe (g->fftsc_float_plan, N);
   if (!plan)
     {
-      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
+      std::lock_guard<std::mutex> lg (g->fftw_plan_mutex);
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
 
@@ -304,47 +360,6 @@ load_wisdom()
       fftwf_import_wisdom_from_file (infile);
       fclose (infile);
     }
-}
-
-void
-FFT::init()
-{
-  /* If an "application" is structured as a set of "plugins" which are unaware
-   * of each other, we need to force a thread-safe planner to avoid crashes.
-   *
-   * As SpectMorph is to be run as plugin in many situations, we need this:
-   */
-#if SPECTMORPH_HAVE_FFTW_THREADSAFE
-  fftwf_make_planner_thread_safe();
-#endif
-  load_wisdom();
-}
-
-static void
-cleanup_fft_plans (map<int, fftwf_plan>& plan_map)
-{
-  if (plan_map.size())
-    {
-      if (getenv ("SPECTMORPH_MAKE_CHECK") && !fft_in_test_program)
-        {
-          fprintf (stderr, "FFT::debug_in_test_program() should be used for unit tests\n");
-          exit (1);
-        }
-    }
-  for (auto& plan_entry : plan_map)
-    fftwf_destroy_plan (plan_entry.second);
-
-  plan_map.clear();
-}
-
-void
-FFT::cleanup()
-{
-  cleanup_fft_plans (fftar_float_plan);
-  cleanup_fft_plans (fftsr_float_plan);
-  cleanup_fft_plans (fftsr_destructive_float_plan);
-  cleanup_fft_plans (fftac_float_plan);
-  cleanup_fft_plans (fftsc_float_plan);
 }
 
 #else

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "smpandaresampler.hh"
+#include "smmain.hh"
 
 #include <algorithm>
 
@@ -80,6 +81,7 @@ private:
     std::vector<float> res3_k;
     std::vector<float> res4_k;
     static constexpr int TSIZE = 16;
+  public:
     RTable()
     {
       for (int order = 4; order <= 8; order += 2)
@@ -115,12 +117,11 @@ private:
             }
         }
     }
-  public:
     static const RTable&
     the()
     {
-      static RTable rtable;
-      return rtable;
+      static Singleton<RTable> rtable;
+      return *rtable.ptr();
     }
     void
     interpolate_resonance (float res, int stages, float *k, const std::vector<float>& res_k) const

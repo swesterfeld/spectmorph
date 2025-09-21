@@ -8567,7 +8567,11 @@ PUGI__NS_BEGIN
 		char_t name[1];
 	};
 
-	static const xpath_node_set dummy_node_set;
+	static const xpath_node_set& dummy_node_set()
+        {
+                static xpath_node_set *s = new xpath_node_set(); // leak intentionally to avoid global dtor
+                return *s;
+        }
 
 	PUGI__FN PUGI__UNSIGNED_OVERFLOW unsigned int hash_string(const char_t* str)
 	{
@@ -12217,7 +12221,7 @@ namespace pugi
 
 	PUGI__FN const xpath_node_set& xpath_variable::get_node_set() const
 	{
-		return (_type == xpath_type_node_set) ? static_cast<const impl::xpath_variable_node_set*>(this)->value : impl::dummy_node_set;
+		return (_type == xpath_type_node_set) ? static_cast<const impl::xpath_variable_node_set*>(this)->value : impl::dummy_node_set();
 	}
 
 	PUGI__FN bool xpath_variable::set(bool value)

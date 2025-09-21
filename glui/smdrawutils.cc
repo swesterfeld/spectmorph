@@ -38,7 +38,7 @@ DrawUtils::static_text_width (Window *window, const string& text)
   return w;
 }
 
-cairo_text_extents_t
+TextExtents
 DrawUtils::static_text_extents (Window *window, const string& text)
 {
   cairo_surface_t *dummy = cairo_image_surface_create (CAIRO_FORMAT_RGB24, 0, 0);

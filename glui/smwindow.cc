@@ -1130,6 +1130,9 @@ Window::set_gui_scaling (double s)
   cfg.set_zoom (sm_round_positive (s * 100));
   cfg.store();
 
+  /* usually the text size has been changed here, so we don't need old cached glyphs */
+  TextRenderer::the()->clear_cache();
+
   /* (1) typically, at this point we notify the host that our window will have a new size */
   signal_update_size();
 

@@ -31,9 +31,6 @@ void execute_fftsr_destructive_float (size_t N, float *in, float *out, const Pla
 
 void   debug_in_test_program (bool enabled);
 
-void   init();
-void   cleanup();
-
 }
 
 }

@@ -24,6 +24,8 @@ class LiveDecoder
 
   LeakDebugger leak_debugger { "SpectMorph::LiveDecoder" };
 
+  class AAFilterTable;
+
   struct PartialState
   {
     float freq;
@@ -41,6 +43,7 @@ class LiveDecoder
   const FFT::Plan    *fft_plan;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
+  AAFilterTable      *aa_filter_table = nullptr;
   RTMemoryArea       *rt_memory_area = nullptr;
   LiveDecoderFilter  *filter = nullptr;
   bool                filter_latency_compensation;

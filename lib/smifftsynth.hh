@@ -5,6 +5,7 @@
 
 #include <sys/types.h>
 #include <vector>
+#include <array>
 
 #include "smmath.hh"
 #include "smfft.hh"
@@ -33,7 +34,7 @@ class IFFTSynth
     SIN_TABLE_MASK = 4095
   };
 
-  static std::vector<float> sin_table;
+  static inline std::array<float, SIN_TABLE_SIZE> sin_table;
 
 public:
   enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANN };
@@ -76,7 +77,13 @@ struct IFFTSynthTable
 {
   std::vector<float> win_trans;
 
-  float             *win_scale;
+  float             *win_scale = nullptr;
+
+  ~IFFTSynthTable()
+  {
+    if (win_scale)
+      FFT::free_array_float (win_scale);
+  }
 };
 
 /*

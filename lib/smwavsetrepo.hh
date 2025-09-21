@@ -4,6 +4,7 @@
 #define SPECTMORPH_WAVSET_REPO_HH
 
 #include "smwavset.hh"
+#include "smmain.hh"
 
 #include <mutex>
 
@@ -20,7 +21,12 @@ public:
 
   WavSet *get (const std::string& filename);
 
-  static WavSetRepo *the(); // Singleton
+  static WavSetRepo *
+  the()
+  {
+    static Singleton<WavSetRepo> singleton;
+    return singleton.ptr();
+  }
 };
 
 }

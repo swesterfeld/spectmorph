@@ -19,18 +19,6 @@ using std::vector;
 
 #include "smpolyphasecoeffs.cc"
 
-PolyPhaseInter*
-PolyPhaseInter::the()
-{
-  static PolyPhaseInter *instance = 0;
-
-  if (!instance)
-    instance = new PolyPhaseInter();
-
-  return instance;
-}
-
-
 double
 PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
 {

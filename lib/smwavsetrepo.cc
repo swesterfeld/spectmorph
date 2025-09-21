@@ -7,12 +7,6 @@ using namespace SpectMorph;
 
 using std::string;
 
-WavSetRepo*
-WavSetRepo::the()
-{
-  return Global::wav_set_repo();
-}
-
 WavSet*
 WavSetRepo::get (const string& filename)
 {

@@ -6,7 +6,6 @@
 #include "smutils.hh"
 #include "smconfig.hh"
 #include "sminstenccache.hh"
-#include "smwavsetrepo.hh"
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
@@ -27,18 +26,17 @@ struct GlobalData
   ~GlobalData();
 
   LeakDebuggerList  leak_debugger_list; /* needs to be the first member to track leaks for the other members */
-  InstEncCache      inst_enc_cache;
-  WavSetRepo        wav_set_repo;
+  InstEncCache      inst_enc_cache;     /* don't use Singelton<> here, initialize in main thread at startup */
 
   std::thread::id   ui_thread;
   std::thread::id   dsp_thread;
 
   vector<function<void()>> free_functions;
+
+  std::recursive_mutex rec_mutex;
 };
 
 static GlobalData *global_data = nullptr;
-
-float *int_sincos_table;
 
 static bool use_sse = true;
 
@@ -110,8 +108,6 @@ GlobalData::GlobalData()
   for (auto area : cfg.debug())
     Debug::enable (area);
 
-  FFT::init();
-  int_sincos_init();
   sm_math_init();
 
   sm_debug ("GlobalData instance created\n");
@@ -119,12 +115,17 @@ GlobalData::GlobalData()
 
 GlobalData::~GlobalData()
 {
-  for (const auto& func : free_functions)
-    func();
+  for (auto func_it = free_functions.rbegin(); func_it != free_functions.rend(); func_it++)
+    (*func_it)();
   free_functions.clear();
 
-  FFT::cleanup();
   sm_debug ("GlobalData instance deleted\n");
+}
+
+std::recursive_mutex&
+sm_global_data_mutex()
+{
+  return global_data->rec_mutex;
 }
 
 Main::Main (int *argc_p, char ***argv_p)
@@ -161,13 +162,6 @@ Global::inst_enc_cache()
 {
   g_return_val_if_fail (global_data, nullptr);
   return &global_data->inst_enc_cache;
-}
-
-WavSetRepo *
-Global::wav_set_repo()
-{
-  g_return_val_if_fail (global_data, nullptr);
-  return &global_data->wav_set_repo;
 }
 
 void

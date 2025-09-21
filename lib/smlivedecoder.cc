@@ -7,6 +7,7 @@
 #include "smrtmemory.hh"
 #include "smfft.hh"
 #include "smblockutils.hh"
+#include "smmain.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -21,24 +22,25 @@ using std::max;
 
 #define DEBUG (0)
 
-static vector<float> antialias_filter_table;
-static std::mutex aa_mutex;
-
-static void
-init_aa_filter()
+class LiveDecoder::AAFilterTable
 {
-  std::lock_guard lg (aa_mutex);
+public:
+  std::array<float, ANTIALIAS_FILTER_TABLE_SIZE> table;
 
-  if (antialias_filter_table.empty())
-    {
-      antialias_filter_table.resize (ANTIALIAS_FILTER_TABLE_SIZE);
+  AAFilterTable()
+  {
+    const double db_at_nyquist = -60;
 
-      const double db_at_nyquist = -60;
-
-      for (size_t i = 0; i < antialias_filter_table.size(); i++)
-        antialias_filter_table[i] = db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
-    }
-}
+    for (size_t i = 0; i < table.size(); i++)
+      table[i] = db_to_factor (double (i) / table.size() * db_at_nyquist);
+  }
+  static AAFilterTable *
+  the()
+  {
+    static Singleton<AAFilterTable> singleton;
+    return singleton.ptr();
+  }
+};
 
 static inline float
 fmatch (float f1, float f2)
@@ -65,7 +67,6 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   noise_samples (block_size),
   vibrato_enabled (false)
 {
-  init_aa_filter();
   set_unison_voices (1, 0);
 
   /* avoid malloc during synthesis */
@@ -76,6 +77,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   unison_freq_factor.reserve (MAX_UNISON_VOICES);
 
   fft_plan = FFT::plan_fftsr_destructive_float (block_size); // not RT-safe due to locking
+  aa_filter_table = AAFilterTable::the();
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
 
@@ -314,7 +316,7 @@ LiveDecoder::gen_sines (float freq_in)
                       if (index >= 0)
                         {
                           if (index < ANTIALIAS_FILTER_TABLE_SIZE)
-                            mag *= antialias_filter_table[index];
+                            mag *= aa_filter_table->table[index];
                           else
                             mag = 0;
                         }
@@ -904,8 +906,6 @@ LiveDecoder::precompute_tables (float mix_freq)
 
   noise_decoder.precompute_tables();
   ifft_synth.precompute_tables();
-
-  init_aa_filter();
 }
 
 void
