@@ -14,7 +14,6 @@ void sm_plugin_init();
 void sm_plugin_cleanup();
 bool sm_init_done();
 std::recursive_mutex& sm_global_data_mutex();
-void sm_global_data_unlock();
 bool sm_sse();
 void sm_enable_sse (bool sse);
 void sm_set_ui_thread();
