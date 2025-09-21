@@ -21,7 +21,7 @@ if [[ "$1" == "sanitize" ]]; then
   done
   sudo make -Cdata install
 elif [[ -z "$1" ]]; then
-  ./autogen.sh --with-download-instruments
+  ./autogen.sh --with-download-instruments --without-fontconfig
   make -j$NPROC
   sudo make install
 else
