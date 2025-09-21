@@ -90,6 +90,13 @@ AC_DEFUN([AC_FREETYPE_REQUIREMENTS],
     PKG_CHECK_MODULES(FREETYPE, freetype2)
 ])
 dnl
+dnl fontconfig
+dnl
+AC_DEFUN([AC_FONTCONFIG_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(FONTCONFIG, fontconfig)
+])
+dnl
 dnl libcairo
 dnl
 AC_DEFUN([AC_CAIRO_REQUIREMENTS],
@@ -301,6 +308,21 @@ else
   SPECTMORPH_HAVE_AO=0
 fi
 AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_AO, $SPECTMORPH_HAVE_AO, [Whether libao is available])
+dnl -------------------------------------------------------------------------
+
+dnl ------------ fontconfig support is optional -----------------------------
+AC_ARG_WITH([fontconfig], [AS_HELP_STRING([--with-fontconfig], [use fontconfig library])])
+if test "x$with_fontconfig" != "xno"; then
+  dnl this check will abort if libao is not found
+  AC_FONTCONFIG_REQUIREMENTS
+  with_fontconfig=yes
+fi
+if test "x$with_fontconfig" != "xno"; then
+  SPECTMORPH_HAVE_FONTCONFIG=1
+else
+  SPECTMORPH_HAVE_FONTCONFIG=0
+fi
+AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FONTCONFIG, $SPECTMORPH_HAVE_FONTCONFIG, [Whether fontconfig is available])
 dnl -------------------------------------------------------------------------
 
 dnl -------------------------------------------------------------------------
@@ -577,6 +599,7 @@ echo "  LV2 plug-in support  . .: $with_lv2"
 echo "  JACK support . . . . . .: $with_jack"
 echo "  Qt5 available  . . . . .: $with_qt"
 echo "  libao support  . . . . .: $with_ao"
+echo "  fontconfig support  .  .: $with_fontconfig"
 echo "  Fonts . . . . . . . . . : $with_fonts"
 
 if test ! -f $INSTRUMENTS_ARCHIVE; then
