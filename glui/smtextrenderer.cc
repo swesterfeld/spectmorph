@@ -1,8 +1,11 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smtextrenderer.hh"
+#include "config.h"
 
+#if SPECTMORPH_HAVE_FONTCONFIG
 #include <fontconfig/fontconfig.h>
+#endif
 
 #include <math.h>
 
@@ -15,6 +18,7 @@ using std::vector;
 static string
 find_font_file (const string& family, bool bold, bool exact)
 {
+#if SPECTMORPH_HAVE_FONTCONFIG
   string desc = family + ":style=" + (bold ? "Bold" : "Regular");
 
   if (!FcInit())
@@ -70,6 +74,9 @@ find_font_file (const string& family, bool bold, bool exact)
   FcPatternDestroy (match);
 
   return filename;
+#else
+  return "";
+#endif
 }
 
 bool
@@ -102,6 +109,8 @@ TextRenderer::load_font (FT_Face *out_face, bool bold) const
   filename = find_font_file ("DejaVu Sans", bold, /* exact */ true);
   if (filename == "")
     filename = find_font_file ("sans-serif", bold, /* exact */ false);
+  if (filename == "")
+    return false;
 
   if (FT_New_Face (ft_library, filename.c_str(), 0, out_face) == 0)
     {
