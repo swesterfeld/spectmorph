@@ -16,7 +16,7 @@ RUN mkdir -p /usr/local/spectmorph-win
 RUN cd windows; ./build-deps.sh
 ENV LV2_CFLAGS=-I/spectmorph/windows/prefix/include
 ENV LV2_LIBS=-L/spectmorph/windows/prefix/lib
-RUN ./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --without-qt --with-fonts --host=x86_64-w64-mingw32.static --with-download-instruments
+RUN ./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --with-static-fftw --without-qt --with-fonts --host=x86_64-w64-mingw32.static --with-download-instruments
 RUN make clean
 RUN make -j$(nproc)
 RUN make -Cvst install
