@@ -124,6 +124,11 @@ public:
     cleanup_plans (fftsr_destructive_float_plan);
     cleanup_plans (fftac_float_plan);
     cleanup_plans (fftsc_float_plan);
+#if SPECTMORPH_HAVE_FFTW_STATIC
+    /* this should only be done if FFTW is linked statically, because otherwise
+     * we could free data that somebody else (host, other plugins) still need */
+    fftwf_cleanup();
+#endif
   }
 };
 
