@@ -341,6 +341,17 @@ fi
 AC_SUBST(STATIC_CXX_LDFLAGS)
 dnl -------------------------------------------------------------------------
 
+dnl ----------- link c++ libs statically if requested -----------------------
+AC_ARG_WITH([static-fftw], AS_HELP_STRING([--with-static-fftw], [enable if fftw is linked statically]))
+
+if test "x$with_static_fftw" = "xyes"; then
+  SPECTMORPH_HAVE_FFTW_STATIC=1
+else
+  SPECTMORPH_HAVE_FFTW_STATIC=0
+fi
+AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW_STATIC, $SPECTMORPH_HAVE_FFTW_STATIC, [Whether fftw is linked statically])
+dnl -------------------------------------------------------------------------
+
 dnl detect host os
 AC_CANONICAL_HOST
 
