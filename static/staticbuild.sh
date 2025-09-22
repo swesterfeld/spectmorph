@@ -12,7 +12,8 @@ cd static
 ./build-deps.sh
 cd ..
 export CPPFLAGS="-I/spectmorph/static/prefix/include"
-./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --without-fontconfig --with-fonts --with-download-instruments
+./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --with-static-fftw --with-fonts --with-download-instruments \
+             --without-qt --without-jack --without-ao --without-fontconfig
 make clean
 make -j$(nproc)
 make -j$(nproc) check
