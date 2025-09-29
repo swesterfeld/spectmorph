@@ -1,5 +1,16 @@
 1.0.0 (-beta3)?:
+- linux filedialog doesn't work on some dirs (~/annex/music_lofi/artists/assembly2005/fast_music/ -> show all -> crash)
+- mp3 support
+  - if sndfile has mp3 support, file dialog should have mp3 as extension when loading files
+    https://libsndfile.github.io/libsndfile/command.html#sfc_get_simple_format_count
+  - mxe update with latest libs and mp3 support
+  - static linux update with mp3 support
+  - macos build-deps update with mp3 support
+- encoder memory usage (branch)
+- man page updates (branch)
+- smooth tune from vocalizer (branch)
 - update manual
+
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 - debug difference between aurora mac aarch64-apple-darwin23.5.0 + sanitizers and linux
