@@ -357,15 +357,20 @@ public:
       if (d1 != d2)
         return d1 > d2; // directories first
 
-      char *filename1_nocase = g_utf8_casefold (i1.filename.c_str(), -1);
-      char *filename2_nocase = g_utf8_casefold (i2.filename.c_str(), -1);
-      char *key1 = g_utf8_collate_key_for_filename (filename1_nocase, -1);
-      char *key2 = g_utf8_collate_key_for_filename (filename2_nocase, -1);
-      string ks1 = key1, ks2 = key2;
-      g_free (key1);
-      g_free (key2);
-      g_free (filename1_nocase);
-      g_free (filename2_nocase);
+      auto sort_key = [] (const string& filename)
+        {
+          char *utf8_valid_name = g_utf8_make_valid (filename.c_str(), -1);
+          char *name_nocase = g_utf8_casefold (utf8_valid_name, -1);
+          char *key = g_utf8_collate_key_for_filename (name_nocase, -1);
+          string ks = key;
+          g_free (key);
+          g_free (name_nocase);
+          g_free (utf8_valid_name);
+
+          return ks;
+        };
+      string ks1 = sort_key (i1.filename);
+      string ks2 = sort_key (i2.filename);
       return ks1 < ks2;
     });
     for (auto item : items)
