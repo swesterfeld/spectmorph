@@ -533,17 +533,53 @@ note_to_text_verbose (int midi_note)
 }
 
 string
-to_utf8 (const u32string& str)
+to_utf8 (const u32string& utf32)
 {
-  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-  return conv.to_bytes (str);
+  std::string result;
+  result.reserve (utf32.size());
+
+  for (gunichar ch : utf32)
+    {
+      // Replace invalid Unicode code points:
+      //  - Above U+10FFFF
+      //  - Surrogates (U+D800–U+DFFF)
+      if (ch > 0x10FFFF || (ch >= 0xD800 && ch <= 0xDFFF))
+        ch = 0xFFFD;
+
+      // need at most 6 bytes of space for g_unichar_to_utf8 output
+      char utf8buf[6];
+      int len = g_unichar_to_utf8 (ch, utf8buf);
+      result.append (utf8buf, len);
+    }
+  return result;
 }
 
 u32string
 to_utf32 (const string& utf8)
 {
-  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-  return conv.from_bytes (utf8);
+  std::u32string result;
+  result.reserve (utf8.size());
+
+  const char *p = utf8.c_str();
+  const char *end = p + utf8.size();
+
+  while (p < end)
+    {
+      gunichar ch = g_utf8_get_char_validated (p, end - p);
+      if (ch == static_cast<gunichar> (-1) || ch == static_cast<gunichar> (-2))
+        {
+          // Invalid sequence: append replacement char U+FFFD
+          result.push_back (0xFFFD);
+          p++;
+        }
+      else
+        {
+          result.push_back (ch);
+          p = g_utf8_next_char (p);
+        }
+    }
+
+  return result;
 }
 
 Error
