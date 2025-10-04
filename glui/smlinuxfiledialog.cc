@@ -53,6 +53,7 @@ class FileDialogWindow : public Window
   struct Item
   {
     string filename;
+    string sort_key;
     bool is_dir;
   };
   vector<Item> items;
@@ -351,27 +352,24 @@ public:
         items.push_back (parent_item);
       }
 
+    for (auto& item : items)
+      {
+        char *utf8_valid_name = g_utf8_make_valid (item.filename.c_str(), -1);
+        char *name_nocase = g_utf8_casefold (utf8_valid_name, -1);
+        char *sort_key = g_utf8_collate_key_for_filename (name_nocase, -1);
+        item.sort_key = sort_key;
+        g_free (sort_key);
+        g_free (name_nocase);
+        g_free (utf8_valid_name);
+      }
+
     std::sort (items.begin(), items.end(), [](Item& i1, Item& i2) {
       int d1 = i1.is_dir;
       int d2 = i2.is_dir;
       if (d1 != d2)
         return d1 > d2; // directories first
 
-      auto sort_key = [] (const string& filename)
-        {
-          char *utf8_valid_name = g_utf8_make_valid (filename.c_str(), -1);
-          char *name_nocase = g_utf8_casefold (utf8_valid_name, -1);
-          char *key = g_utf8_collate_key_for_filename (name_nocase, -1);
-          string ks = key;
-          g_free (key);
-          g_free (name_nocase);
-          g_free (utf8_valid_name);
-
-          return ks;
-        };
-      string ks1 = sort_key (i1.filename);
-      string ks2 = sort_key (i2.filename);
-      return ks1 < ks2;
+      return i1.sort_key < i2.sort_key;
     });
     for (auto item : items)
       {
