@@ -3,6 +3,8 @@
 #include "smwavdata.hh"
 #include "smmath.hh"
 
+#include <set>
+
 #include <sndfile.h>
 #include <assert.h>
 
@@ -10,6 +12,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::set;
 
 static string
 strip_dot (string s)
@@ -437,4 +440,41 @@ const char *
 WavData::error_blurb() const
 {
   return m_error_blurb.c_str();
+}
+
+vector<string>
+WavData::supported_extensions()
+{
+  set<string> unique_extensions;
+
+  int count = 0;
+  if (sf_command (nullptr, SFC_GET_SIMPLE_FORMAT_COUNT, &count, sizeof (int)) != 0)
+    {
+      sm_debug ("error: failed to query libsndfile format count.\n");
+      return {};
+    }
+
+  for (int i = 0; i < count; i++)
+    {
+      SF_FORMAT_INFO info;
+      info.format = i;
+
+      if (sf_command (nullptr, SFC_GET_SIMPLE_FORMAT, &info, sizeof(info)) == 0)
+        {
+          string ext = info.extension;
+          if (ext == "oga") /* older libsndfile versions return oga for ogg/vorbis format */
+            {
+              unique_extensions.insert ("ogg");
+            }
+          else if (ext == "aiff")
+            {
+              unique_extensions.insert ("aif");
+              unique_extensions.insert ("aiff");
+            }
+          else if (!ext.empty())
+            unique_extensions.insert (ext);
+        }
+    }
+
+  return vector<string> (unique_extensions.begin(), unique_extensions.end());
 }
