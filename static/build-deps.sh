@@ -17,6 +17,13 @@ function autoconfbuild {
   make install
 }
 
+function download {
+  echo "--- Downloading.. ${SRCDIR}/$1 $2"
+  test -f ${SRCDIR}/$1 && return
+  curl -L -o ${SRCDIR}/$1.tmp $2
+  mv ${SRCDIR}/$1.tmp ${SRCDIR}/$1
+}
+
 SRCDIR=$PWD/src
 BUILDD=$PWD/build
 
@@ -33,7 +40,6 @@ cd $SRCDIR
 apt-get source libogg
 apt-get source libvorbis
 apt-get source flac
-apt-get source libsndfile
 apt-get source zlib1g
 apt-get source libffi
 apt-get source glib2.0
@@ -53,7 +59,28 @@ cd $SRCDIR/flac-1.3.3
 ./autogen.sh
 autoconfbuild --disable-shared
 
-cd $SRCDIR/libsndfile-1.0.28
+download opus-1.3.1.tar.gz https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
+cd $SRCDIR
+tar xf opus-1.3.1.tar.gz
+cd opus-1.3.1
+autoconfbuild --disable-shared
+
+download mpg123-1.33.3.tar.bz2 https://sourceforge.net/projects/mpg123/files/mpg123/1.33.3/mpg123-1.33.3.tar.bz2
+cd $SRCDIR
+tar xf mpg123-1.33.3.tar.bz2
+cd $SRCDIR/mpg123-1.33.3
+autoconfbuild --disable-shared
+
+download lame-3.100.tar.gz https://sourceforge.net/projects/lame/files/lame/3.100/lame-3.100.tar.gz
+cd $SRCDIR
+tar xf lame-3.100.tar.gz
+cd $SRCDIR/lame-3.100
+autoconfbuild --disable-shared
+
+download libsndfile-1.2.2.tar.xz https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz
+cd $SRCDIR
+tar xf libsndfile-1.2.2.tar.xz
+cd libsndfile-1.2.2
 autoconfbuild --disable-shared
 
 cd $SRCDIR/zlib-1.2.11.dfsg
