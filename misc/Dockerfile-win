@@ -5,8 +5,8 @@ RUN apt-get -y install wget build-essential autoconf automake \
                libtool-bin pkg-config gettext autoconf-archive \
                xz-utils nsis meson wine
 
-RUN wget -q https://github.com/swesterfeld/spectmorph-mxe/releases/download/2024-06-16/spectmorph-mxe-2024-06-16.tar.xz
-RUN tar xf spectmorph-mxe-2024-06-16.tar.xz
+RUN wget -q https://github.com/swesterfeld/spectmorph-mxe/releases/download/2025-10-16/spectmorph-mxe-2025-10-16.tar.xz
+RUN tar xf spectmorph-mxe-2025-10-16.tar.xz
 
 ADD . /spectmorph
 WORKDIR /spectmorph
