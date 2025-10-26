@@ -141,4 +141,4 @@ src libsndfile-1.2.2 tar.xz https://github.com/libsndfile/libsndfile/releases/do
 autoconfbuild --disable-shared
 
 src lv2-1.18.10 tar.gz https://github.com/lv2/lv2/archive/refs/tags/v1.18.10.tar.gz
-mesonbuild
+mesonbuild -Dplugins=disabled
