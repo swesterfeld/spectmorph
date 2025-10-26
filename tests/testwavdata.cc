@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <cstring>
 
 using namespace SpectMorph;
 
@@ -129,8 +130,36 @@ run_tests (WavData::OutFormat format, string ext)
 }
 
 int
-main()
+main (int argc, char **argv)
 {
-  run_tests (WavData::OutFormat::WAV, "wav");
-  run_tests (WavData::OutFormat::FLAC, "flac");
+  if (argc == 2 && strcmp (argv[1], "extensions") == 0)
+    {
+      for (auto ext : WavData::supported_extensions())
+        printf ("%s\n", ext.c_str());
+    }
+  else if (argc == 3 && strcmp (argv[1], "load") == 0)
+    {
+      WavData wd;
+      double start_time = get_time();
+      bool ok = wd.load (argv[2]);
+      double end_time = get_time();
+      if (!ok)
+        {
+          printf ("ERROR: %s\n", wd.error_blurb());
+          return 1;
+        }
+      else
+        {
+          assert (wd.n_values() % wd.n_channels() == 0);
+          printf ("OK: n_frames: %zd\n", wd.n_values() / wd.n_channels());
+          printf ("hash %s\n", sha1_hash ((const unsigned char *) wd.samples().data(), sizeof (float) * wd.samples().size()).c_str());
+          printf ("%f Mvalues/s\n", wd.n_values() / 1000 / 1000 / (end_time - start_time));
+        }
+    }
+  else
+    {
+      assert (argc == 1);
+      run_tests (WavData::OutFormat::WAV, "wav");
+      run_tests (WavData::OutFormat::FLAC, "flac");
+    }
 }

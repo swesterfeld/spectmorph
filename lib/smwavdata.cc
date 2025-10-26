@@ -3,6 +3,8 @@
 #include "smwavdata.hh"
 #include "smmath.hh"
 
+#include <set>
+
 #include <sndfile.h>
 #include <assert.h>
 
@@ -10,6 +12,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::set;
 
 static string
 strip_dot (string s)
@@ -62,50 +65,58 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
       return false;
     }
 
+  if (sfinfo.frames != SF_COUNT_MAX)
+    {
+      /* reserve space only if we know how long the input sample is */
+      m_samples.reserve (sfinfo.frames * sfinfo.channels);
+    }
+
   int mask_format = sfinfo.format & SF_FORMAT_SUBMASK;
+
   sf_count_t count;
+  sf_count_t buffer_size = 4096;
 
-  m_samples.resize (sfinfo.frames * sfinfo.channels);
-  if (mask_format == SF_FORMAT_FLOAT || mask_format == SF_FORMAT_DOUBLE)
+  vector<float> fbuffer;
+  vector<int>   ibuffer (buffer_size * sfinfo.channels);
+  do
     {
-      // for floating point wav files, we use the float data as provided by libsndfile
-      count = sf_readf_float (sndfile, m_samples.data(), sfinfo.frames);
+      if (mask_format == SF_FORMAT_FLOAT || mask_format == SF_FORMAT_DOUBLE)
+        {
+          // for floating point wav files, we use the float data as provided by libsndfile
+          fbuffer.resize (buffer_size * sfinfo.channels);
+          count = sf_readf_float (sndfile, fbuffer.data(), buffer_size);
+          fbuffer.resize (count * sfinfo.channels);
+        }
+      else
+        {
+          // for non-floating point wav files, we convert
+          count = sf_readf_int (sndfile, ibuffer.data(), buffer_size);
+          fbuffer.resize (count * sfinfo.channels);
+
+          /* reading a wav file and saving it again with the libsndfile float API will
+           * change some values due to normalization issues:
+           *   http://www.mega-nerd.com/libsndfile/FAQ.html#Q010
+           *
+           * to avoid the problem, we use the int API and do the conversion beween int
+           * and float manually - the important part is that the normalization factors
+           * used during read and write are identical
+           */
+          const double norm = 1.0 / 0x80000000LL;
+          for (size_t i = 0; i < fbuffer.size(); i++)
+            fbuffer[i] = ibuffer[i] * norm;
+        }
+      m_samples.insert (m_samples.end(), fbuffer.begin(), fbuffer.end());
+
+      error = sf_error (sndfile);
+      if (error)
+        {
+          m_error_blurb = strip_dot (sf_strerror (sndfile));
+          sf_close (sndfile);
+
+          return false;
+        }
     }
-  else
-    {
-      // for non-floating point wav files, we convert
-      vector<int> isamples (sfinfo.frames * sfinfo.channels);
-      count = sf_readf_int (sndfile, isamples.data(), sfinfo.frames);
-
-      /* reading a wav file and saving it again with the libsndfile float API will
-       * change some values due to normalization issues:
-       *   http://www.mega-nerd.com/libsndfile/FAQ.html#Q010
-       *
-       * to avoid the problem, we use the int API and do the conversion beween int
-       * and float manually - the important part is that the normalization factors
-       * used during read and write are identical
-       */
-      const double norm = 1.0 / 0x80000000LL;
-      for (size_t i = 0; i < m_samples.size(); i++)
-        m_samples[i] = isamples[i] * norm;
-    }
-
-  error = sf_error (sndfile);
-  if (error)
-    {
-      m_error_blurb = strip_dot (sf_strerror (sndfile));
-      sf_close (sndfile);
-
-      return false;
-    }
-
-  if (count != sfinfo.frames)
-    {
-      m_error_blurb = "Reading sample data failed: short read";
-      sf_close (sndfile);
-
-      return false;
-    }
+  while (count > 0);
 
   m_mix_freq    = sfinfo.samplerate;
   m_n_channels  = sfinfo.channels;
@@ -437,4 +448,41 @@ const char *
 WavData::error_blurb() const
 {
   return m_error_blurb.c_str();
+}
+
+vector<string>
+WavData::supported_extensions()
+{
+  set<string> unique_extensions;
+
+  int count = 0;
+  if (sf_command (nullptr, SFC_GET_SIMPLE_FORMAT_COUNT, &count, sizeof (int)) != 0)
+    {
+      sm_debug ("error: failed to query libsndfile format count.\n");
+      return {};
+    }
+
+  for (int i = 0; i < count; i++)
+    {
+      SF_FORMAT_INFO info;
+      info.format = i;
+
+      if (sf_command (nullptr, SFC_GET_SIMPLE_FORMAT, &info, sizeof(info)) == 0)
+        {
+          string ext = info.extension;
+          if (ext == "oga") /* older libsndfile versions return oga for ogg/vorbis format */
+            {
+              unique_extensions.insert ("ogg");
+            }
+          else if (ext == "aiff")
+            {
+              unique_extensions.insert ("aif");
+              unique_extensions.insert ("aiff");
+            }
+          else if (!ext.empty())
+            unique_extensions.insert (ext);
+        }
+    }
+
+  return vector<string> (unique_extensions.begin(), unique_extensions.end());
 }

@@ -32,6 +32,8 @@ public:
   WavData();
   WavData (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth);
 
+  static std::vector<std::string> supported_extensions();
+
   bool load (const std::vector<unsigned char>& in);
   bool load (const std::string& filename);
   bool load_mono (const std::string& filename);
