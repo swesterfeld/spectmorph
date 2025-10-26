@@ -131,7 +131,13 @@ autoconfbuild --disable-shared
 src opus-1.3.1 tar.gz https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
 autoconfbuild --disable-shared
 
-src libsndfile-1.2.0 tar.xz https://github.com/libsndfile/libsndfile/releases/download/1.2.0/libsndfile-1.2.0.tar.xz
+src mpg123-1.33.3 tar.bz2 https://sourceforge.net/projects/mpg123/files/mpg123/1.33.3/mpg123-1.33.3.tar.bz2
+autoconfbuild --disable-shared
+
+src lame-3.100 tar.gz https://sourceforge.net/projects/lame/files/lame/3.100/lame-3.100.tar.gz
+autoconfbuild --disable-shared
+
+src libsndfile-1.2.2 tar.xz https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz
 autoconfbuild --disable-shared
 
 src lv2-1.18.10 tar.gz https://github.com/lv2/lv2/archive/refs/tags/v1.18.10.tar.gz
