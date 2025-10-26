@@ -58,6 +58,7 @@ pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root 
 mkdir -p installer-tmp/SpectMorph.data/SpectMorph
 cp -rv $SMDIR/share/spectmorph/instruments installer-tmp/SpectMorph.data/SpectMorph || die "error: cp instruments"
 cp -rv $PREFIX/share/spectmorph/templates installer-tmp/SpectMorph.data/SpectMorph || die "error: cp templates"
+cp -rv $PREFIX/share/spectmorph/fonts installer-tmp/SpectMorph.data/SpectMorph || die "error: cp fonts"
 pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/SpectMorph.data --identifier "org.spectmorph.data.SpectMorph.pkg" --version ${PACKAGE_VERSION} --install-location "/tmp/SpectMorph.data" --scripts DataInstallerScript SpectMorph.data.pkg
 rm -rf installer-tmp/SpectMorph.data
 

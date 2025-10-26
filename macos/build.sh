@@ -31,7 +31,7 @@ CXXFLAGS="$CFLAGS" \
 OBJCFLAGS="$CFLAGS" \
 OBJCXXFLAGS="$CFLAGS" \
 ./autogen.sh $SDK_AUTOCONF_BUILD --prefix=$SM_PREFIX --without-qt --without-jack --without-ao --without-fontconfig \
-                                 --disable-shared --with-static-fftw --with-download-instruments || die "configure failed"
+                                 --disable-shared --with-static-fftw --with-fonts --with-download-instruments || die "configure failed"
 cd $MACOS_DIR || die "cd macos_dir"
 
 source ./config.sh || die "source config.sh"
