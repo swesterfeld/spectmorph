@@ -14,14 +14,16 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "smtool" "1" "2025-08-21" "1.0.0-beta2" "SpectMorph Manual"
+.TH "smtool" "1" "2026-01-06" "1.0.0-beta2" "SpectMorph Manual"
 .hy
 .SH NAME
 .PP
 smtool - tool to show/change SpectMorph data from .sm/.smset files
 .SH SYNOPSIS
 .PP
-\f[B]smtool\f[R] \f[I]|\f[R] \f[I]\f[R] [ \f[I]\f[R] ]
+\f[B]smtool\f[R] \f[I]\f[VI]<sm_file>\f[I]|\f[VI]<smset_file>\f[I]\f[R]
+\f[I]\f[VI]<command>\f[I]\f[R] [
+\f[I]\f[VI]<command_specific_args>\f[I]\f[R] ]
 .SH DESCRIPTION
 .PP
 \f[B]smtool\f[R] is a general purpose program that can perform
@@ -36,8 +38,9 @@ individual .sm files that are contained in the .smset file.
 specific arguments are listed below.
 .SH COMMANDS
 .TP
-\f[B]volume\f[R] \f[I]\f[R]
-Compute average energy of the audio data around \f[I]\f[R].
+\f[B]volume\f[R] \f[I]\f[VI]<percent>\f[I]\f[R]
+Compute average energy of the audio data around
+\f[I]\f[VI]<percent>\f[I]\f[R].
 .TP
 \f[B]fundamental-freq\f[R]
 Output fundamental frequency of the audio data.
@@ -58,14 +61,14 @@ data.
 \f[B]loop-params\f[R]
 Output loop parameters of the audio data.
 .TP
-\f[B]noise-params\f[R] \f[I]\f[R]
+\f[B]noise-params\f[R] \f[I]\f[VI]<frame_no>\f[I]\f[R]
 Output noise component of a frame of the audio data.
 .TP
-\f[B]frame\f[R] \f[I]\f[R]
+\f[B]frame\f[R] \f[I]\f[VI]<frame_no>\f[I]\f[R]
 Show original samples and reconstructed samples for one frame of the
 audio data.
 .TP
-\f[B]frame-params\f[R] \f[I]\f[R]
+\f[B]frame-params\f[R] \f[I]\f[VI]<frame_no>\f[I]\f[R]
 Show the freqencies/magnitudes of one frame of the audio data.
 .TP
 \f[B]total-noise\f[R]
@@ -77,15 +80,15 @@ Check all frame data contents for NaNs.
 \f[B]original-samples\f[R]
 Show original samples of the audio data.
 .TP
-\f[B]freq\f[R] \f[I]\f[R] \f[I]\f[R]
+\f[B]freq\f[R] \f[I]\f[VI]<freq_min>\f[I]\f[R] \f[I]\f[VI]<freq_max>\f[I]\f[R]
 Show all frequency entries of the audio data in the specified range.
 .TP
-\f[B]spectrum\f[R] \f[I]\f[R]
+\f[B]spectrum\f[R] \f[I]\f[VI]<frame_no>\f[I]\f[R]
 Compare original and reconstructed spectrum for a given frame.
 .TP
-\f[B]auto-loop\f[R] \f[I]\f[R]
+\f[B]auto-loop\f[R] \f[I]\f[VI]<percent>\f[I]\f[R]
 Set a one frame loop that starts and ends at the same point (given by
-\f[I]\f[R]).
+\f[I]\f[VI]<percent>\f[I]\f[R]).
 .TP
 \f[B]tail-loop\f[R]
 Loop audio data at the end using a one frame loop.
@@ -99,8 +102,9 @@ Tune each frame of the instrument.
 This will discard minimal changes in frequency which are normal for most
 instruments, so it might sound artificial.
 .TP
-\f[B]auto-volume\f[R] \f[I]\f[R]
-Normalize audio volume, using the volume around \f[I]\f[R] as reference.
+\f[B]auto-volume\f[R] \f[I]\f[VI]<percent>\f[I]\f[R]
+Normalize audio volume, using the volume around
+\f[I]\f[VI]<percent>\f[I]\f[R] as reference.
 .TP
 \f[B]auto-volume-from-loop\f[R]
 Normalize audio volume, using the volume of the looped part as

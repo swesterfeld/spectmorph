@@ -22,16 +22,8 @@ Note that stripped models can be created directly by the encoder using **smenc -
 **-h**, **\--help**
 :   Shows a brief help message.
 
-```{=html}
-<!-- -->
-```
-
 **-v**, **\--version**
 :   Prints out **smstrip** version.
-
-```{=html}
-<!-- -->
-```
 
 **\--keep-samples**
 :   Strips debugging information, but keeps the original sample data (useful for quality comparisions). This of course reduces the file size less than full stripping.

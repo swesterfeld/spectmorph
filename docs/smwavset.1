@@ -14,14 +14,15 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "smwavset" "1" "2025-08-21" "1.0.0-beta2" "SpectMorph Manual"
+.TH "smwavset" "1" "2026-01-06" "1.0.0-beta2" "SpectMorph Manual"
 .hy
 .SH NAME
 .PP
 smwavset - Program to manage spectmorph multiwave files
 .SH SYNOPSIS
 .PP
-\f[B]smwavset\f[R] \f[I]\f[R] [\f[I]OPTIONS\f[R]] [ \f[I]...\f[R] ]
+\f[B]smwavset\f[R] \f[I]\f[VI]<command>\f[I]\f[R] [\f[I]OPTIONS\f[R]] [
+\f[I]\f[VI]<command specific args>\f[I]...\f[R] ]
 .SH DESCRIPTION
 .PP
 \f[B]smwavset\f[R] is a command line tool to manage multi-wave files for
@@ -42,7 +43,7 @@ Shows a brief help message.
 \f[B]-v\f[R], \f[B]--version\f[R]
 Prints out smwavset version.
 .TP
-\f[B]--args\f[R] \f[I]\f[R]
+\f[B]--args\f[R] \f[I]\f[VI]<arguments>\f[I]\f[R]
 Specify additional arguments to be passed to smenc/smplay.
 This could be --args \[dq]-O1\[dq] for encoding, or --args
 \[dq]--no-sines\[dq] for decoding.
@@ -57,41 +58,41 @@ is usually necessary.
 The default value is /tmp, which is only appropriate for testing; you
 should ensure that scripts setup a different value.
 .TP
-\f[B]--format\f[R] \f[I]\f[R],\f[I]\f[R],\f[I]\f[R],...,\f[I]\f[R]
+\f[B]--format\f[R] \f[I]\f[VI]<field1>\f[I]\f[R],\f[I]\f[VI]<field2>\f[I]\f[R],\f[I]\f[VI]<field3>\f[I]\f[R],...,\f[I]\f[VI]<fieldN>\f[I]\f[R]
 Set the output format for the list command.
 .TP
-\f[B]-j\f[R] \f[I]\f[R]
-Use \f[I]\f[R] parallel jobs for encoding (for systems with more than
-one processor).
+\f[B]-j\f[R] \f[I]\f[VI]<jobs>\f[I]\f[R]
+Use \f[I]\f[VI]<jobs>\f[I]\f[R] parallel jobs for encoding (for systems
+with more than one processor).
 .SH COMMANDS
 .TP
-\f[B]init\f[R] [ \f[I]\f[R] ] \f[I]\f[R]...
+\f[B]init\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<wavset>\f[I]\f[R]...
 Initializes a new wavset; can also initialize more than one wavset
 specified on the commandline.
 .TP
-\f[B]add\f[R] [ \f[I]\f[R] ] \f[I]\f[R] \f[I]\f[R] \f[I]\f[R]
+\f[B]add\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<wavset>\f[I]\f[R] \f[I]\f[VI]<midi_note>\f[I]\f[R] \f[I]\f[VI]<path>\f[I]\f[R]
 Adds a wave file to the wavset, where midi_note is the midi note the
 wave file has been recorded for.
 .TP
-\f[B]list\f[R] [ \f[I]\f[R] ] \f[I]\f[R]
+\f[B]list\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<wavset>\f[I]\f[R]
 Lists the wave files that are contained within the wavset.
 The output format for the list command can be specified using the format
 option (comma seperated fields).
 See FIELDS section for a list of valid fields
 .TP
-\f[B]encode\f[R] [ \f[I]\f[R] ] \f[I]\f[R] \f[I]\f[R]
+\f[B]encode\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<wset_filename>\f[I]\f[R] \f[I]\f[VI]<smset_filename>\f[I]\f[R]
 Encodes a wavset using smenc.
 .TP
-\f[B]decode\f[R] [ \f[I]\f[R] ] \f[I]\f[R] \f[I]\f[R]
+\f[B]decode\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<smset_filename>\f[I]\f[R] \f[I]\f[VI]<wset_filename>\f[I]\f[R]
 Decodes a wavset using smplay.
 .TP
-\f[B]delta\f[R] [ \f[I]\f[R] ] \f[I]\f[R]...\f[I]\f[R]
+\f[B]delta\f[R] [ \f[I]\f[VI]<options>\f[I]\f[R] ] \f[I]\f[VI]<wset_filename1>\f[I]\f[R]...\f[I]\f[VI]<wset_filenameN>\f[I]\f[R]
 Computes the difference between many wavsets.
 The differencce between the first and second wavset is the reference
 which is 100%.
 The other wavsets are measured against that reference.
 .TP
-\f[B]link\f[R] \f[I]\f[R]
+\f[B]link\f[R] \f[I]\f[VI]<smset>\f[I]\f[R]
 This command includes all .sm files that are referred to by the smset in
 one big file.
 This is useful as final step when building instruments.

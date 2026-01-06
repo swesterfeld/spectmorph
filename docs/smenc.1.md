@@ -35,11 +35,11 @@ channel number.
 **-v**, **\--version**
 :   Prints out smenc version.
 
-**-f** *`<frequency>`{=html}*
+**-f** *`<frequency>`*
 :   Specify fundamental frequency in Hz. This is equivalent to specifying the
 midi note; only one of -m and -f should be used.
 
-**-m** *`<midi-note>`{=html}*
+**-m** *`<midi-note>`*
 :   Specify the midi note of the input; this will be used to set the
 fundamental frequency in Hz. The midi note should be an integer between 0 and
 127.  Only one of -m and -f should be used.
@@ -53,7 +53,7 @@ works well for input material with a harmonic spectrum.
 the -F option, however the result of the frequency detection will be rounded to
 the nearest midi note.
 
-**-O** *`<level>`{=html}*
+**-O** *`<level>`*
 :   For all frames of the input file, once smenc has found out which sine waves
 can be used to describe the frame, it needs to estimate the magnitude and phase
 of each sine wave for this frame. The optimization level chooses the algorithm

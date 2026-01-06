@@ -6,7 +6,7 @@ smtool - tool to show/change SpectMorph data from .sm/.smset files
 
 # SYNOPSIS
 
-**smtool** *`<sm_file>`{=html}\|`<smset_file>`{=html}* *`<command>`{=html}* \[ *`<command_specific_args>`{=html}* \]
+**smtool** *`<sm_file>`|`<smset_file>`* *`<command>`* \[ *`<command_specific_args>`* \]
 
 # DESCRIPTION
 
@@ -18,145 +18,65 @@ smtool - tool to show/change SpectMorph data from .sm/.smset files
 
 # COMMANDS
 
-**volume** *`<percent>`{=html}*
-:   Compute average energy of the audio data around *`<percent>`{=html}*.
-
-```{=html}
-<!-- -->
-```
+**volume** *`<percent>`*
+:   Compute average energy of the audio data around *`<percent>`*.
 
 **fundamental-freq**
 :   Output fundamental frequency of the audio data.
 
-```{=html}
-<!-- -->
-```
-
 **mix-freq**
 :   Output mixing frequency (sample rate) of the audio data.
-
-```{=html}
-<!-- -->
-```
 
 **zero-values-at-start**
 :   Output zero-values-at-start property of the audio data.
 
-```{=html}
-<!-- -->
-```
-
 **attack**
 :   Output attack parameters of the audio data.
-
-```{=html}
-<!-- -->
-```
 
 **size**
 :   Output overview of the size in bytes of the different parts of the audio data.
 
-```{=html}
-<!-- -->
-```
-
 **loop-params**
 :   Output loop parameters of the audio data.
 
-```{=html}
-<!-- -->
-```
-
-**noise-params** *`<frame_no>`{=html}*
+**noise-params** *`<frame_no>`*
 :   Output noise component of a frame of the audio data.
 
-```{=html}
-<!-- -->
-```
-
-**frame** *`<frame_no>`{=html}*
+**frame** *`<frame_no>`*
 :   Show original samples and reconstructed samples for one frame of the audio data.
 
-```{=html}
-<!-- -->
-```
-
-**frame-params** *`<frame_no>`{=html}*
+**frame-params** *`<frame_no>`*
 :   Show the freqencies/magnitudes of one frame of the audio data.
-
-```{=html}
-<!-- -->
-```
 
 **total-noise**
 :   Sum up all noise parameters of all frames of the audio data.
 
-```{=html}
-<!-- -->
-```
-
 **nan-test**
 :   Check all frame data contents for NaNs.
-
-```{=html}
-<!-- -->
-```
 
 **original-samples**
 :   Show original samples of the audio data.
 
-```{=html}
-<!-- -->
-```
-
-**freq** *`<freq_min>`{=html}* *`<freq_max>`{=html}*
+**freq** *`<freq_min>`* *`<freq_max>`*
 :   Show all frequency entries of the audio data in the specified range.
 
-```{=html}
-<!-- -->
-```
-
-**spectrum** *`<frame_no>`{=html}*
+**spectrum** *`<frame_no>`*
 :   Compare original and reconstructed spectrum for a given frame.
 
-```{=html}
-<!-- -->
-```
-
-**auto-loop** *`<percent>`{=html}*
-:   Set a one frame loop that starts and ends at the same point (given by *`<percent>`{=html}*).
-
-```{=html}
-<!-- -->
-```
+**auto-loop** *`<percent>`*
+:   Set a one frame loop that starts and ends at the same point (given by *`<percent>`*).
 
 **tail-loop**
 :   Loop audio data at the end using a one frame loop.
 
-```{=html}
-<!-- -->
-```
-
 **auto-tune**
 :   Tune instrument using the (40%..60%) data to extract the actual frequency.
-
-```{=html}
-<!-- -->
-```
 
 **tune-all-frames**
 :   Tune each frame of the instrument. This will discard minimal changes in frequency which are normal for most instruments, so it might sound artificial.
 
-```{=html}
-<!-- -->
-```
-
-**auto-volume** *`<percent>`{=html}*
-:   Normalize audio volume, using the volume around *`<percent>`{=html}* as reference.
-
-```{=html}
-<!-- -->
-```
+**auto-volume** *`<percent>`*
+:   Normalize audio volume, using the volume around *`<percent>`* as reference.
 
 **auto-volume-from-loop**
 :   Normalize audio volume, using the volume of the looped part as reference.

@@ -6,7 +6,7 @@ smsfimport - program to create SpectMorph models from SoundFont presets
 
 # SYNOPSIS
 
-**smsfimport** *`<command>`{=html}* *`<SoundFontFile>`{=html}* \[*OPTIONS*\] \[*`<command specific args>`{=html}\...*\]
+**smsfimport** *`<command>`* *`<SoundFontFile>`* \[*OPTIONS*\] \[*`<command specific args>`\...*\]
 
 # DESCRIPTION
 
@@ -19,30 +19,18 @@ smsfimport - program to create SpectMorph models from SoundFont presets
 **-h**, **\--help**
 :   Shows a brief help message.
 
-```{=html}
-<!-- -->
-```
-
 **-v**, **\--version**
 :   Prints out smsfimport version.
 
 # COMMANDS
 
-**list** *`<SoundFontFile>`{=html}*
+**list** *`<SoundFontFile>`*
 :   Shows all presets contained in the SoundFontFile.
 
-```{=html}
-<!-- -->
-```
-
-**dump** *`<SoundFontFile>`{=html}* \[ *`<PresetName>`{=html}* \]
+**dump** *`<SoundFontFile>`* \[ *`<PresetName>`* \]
 :   Displays a detailed view of the parameters specified for a preset (or for all presets).
 
-```{=html}
-<!-- -->
-```
-
-**import** *`<SoundFontFile>`{=html}* *`<PresetName>`{=html}*
+**import** *`<SoundFontFile>`* *`<PresetName>`*
 :   Imports a preset, creating a \*.smset file. For preset \"Grand Piano\", the resulting output would be \"grand_piano.smset\".
 
 # SEE ALSO {#see_also}

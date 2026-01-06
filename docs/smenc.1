@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "smenc" "1" "2025-08-21" "1.0.0-beta2" "SpectMorph Manual"
+.TH "smenc" "1" "2026-01-06" "1.0.0-beta2" "SpectMorph Manual"
 .hy
 .SH NAME
 .PP
@@ -55,12 +55,12 @@ Shows a brief help message.
 \f[B]-v\f[R], \f[B]--version\f[R]
 Prints out smenc version.
 .TP
-\f[B]-f\f[R] \f[I]\f[R]
+\f[B]-f\f[R] \f[I]\f[VI]<frequency>\f[I]\f[R]
 Specify fundamental frequency in Hz.
 This is equivalent to specifying the midi note; only one of -m and -f
 should be used.
 .TP
-\f[B]-m\f[R] \f[I]\f[R]
+\f[B]-m\f[R] \f[I]\f[VI]<midi-note>\f[I]\f[R]
 Specify the midi note of the input; this will be used to set the
 fundamental frequency in Hz.
 The midi note should be an integer between 0 and 127.
@@ -75,7 +75,7 @@ Automatically detect the midi note of the input sample.
 This is similar to the -F option, however the result of the frequency
 detection will be rounded to the nearest midi note.
 .TP
-\f[B]-O\f[R] \f[I]\f[R]
+\f[B]-O\f[R] \f[I]\f[VI]<level>\f[I]\f[R]
 For all frames of the input file, once smenc has found out which sine
 waves can be used to describe the frame, it needs to estimate the
 magnitude and phase of each sine wave for this frame.

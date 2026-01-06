@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "smplay" "1" "2025-08-21" "1.0.0-beta2" "SpectMorph Manual"
+.TH "smplay" "1" "2026-01-06" "1.0.0-beta2" "SpectMorph Manual"
 .hy
 .SH NAME
 .PP
@@ -43,7 +43,7 @@ Shows a brief help message.
 \f[B]-v\f[R], \f[B]--version\f[R]
 Prints out \f[B]smplay\f[R] version.
 .TP
-\f[B]--rate\f[R] \f[I]\f[R]
+\f[B]--rate\f[R] \f[I]\f[VI]<sampling-rate>\f[I]\f[R]
 Set replay rate manually; also useful for specifying the desired rate of
 the wav file, if \f[B]--export\f[R] is used.
 .TP
@@ -60,10 +60,10 @@ Use deterministic random generator; this will produce identical noise
 components if the same file is decoded twice, making the audio output
 exactly the same.
 .TP
-\f[B]--export\f[R] \f[I]\f[R]
+\f[B]--export\f[R] \f[I]\f[VI]<wav-filename>\f[I]\f[R]
 Instead of playing the file, write the output to a wav file.
 .TP
-\f[B]-m\f[R], \f[B]--midi-note\f[R] \[aq]\[aq]
+\f[B]-m\f[R], \f[B]--midi-note\f[R] \f[I]\f[VI]<midi-note>\f[I]\f[R]
 Select midi note to play, in case an SMSet-File was specified as input
 file.
 .SH SEE ALSO

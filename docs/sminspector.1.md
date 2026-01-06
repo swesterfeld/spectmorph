@@ -18,10 +18,6 @@ list of instruments to open should be passed as first argument. This file is a t
 **smset_dir** \"*directory*\"
 :   Set directory which contains the smset files.
 
-```{=html}
-<!-- -->
-```
-
 **smset** \"*instrument.smset*\"
 :   Add smset-instrument.
 

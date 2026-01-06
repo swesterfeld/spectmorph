@@ -21,53 +21,25 @@ Since the SpectMorph model consists of sine waves and noise, options to disable 
 **-h**, **\--help**
 :   Shows a brief help message.
 
-```{=html}
-<!-- -->
-```
-
 **-v**, **\--version**
 :   Prints out **smplay** version.
 
-```{=html}
-<!-- -->
-```
-
-**\--rate** *`<sampling rate>`{=html}*
+**\--rate** *`<sampling-rate>`*
 :   Set replay rate manually; also useful for specifying the desired rate of the wav file, if **\--export** is used.
-
-```{=html}
-<!-- -->
-```
 
 **\--no-noise**
 :   Disable noise decoder, so that only the sine wave part of the signal is decoded.
 
-```{=html}
-<!-- -->
-```
-
 **\--no-sines**
 :   Disable sine decoder, so that only the noise part of the signal is decoded.
-
-```{=html}
-<!-- -->
-```
 
 **\--det-random**
 :   Use deterministic random generator; this will produce identical noise components if the same file is decoded twice, making the audio output exactly the same.
 
-```{=html}
-<!-- -->
-```
-
-**\--export** *`<wav filename>`{=html}*
+**\--export** *`<wav-filename>`*
 :   Instead of playing the file, write the output to a wav file.
 
-```{=html}
-<!-- -->
-```
-
-**-m**, **\--midi-note** \'\'
+**-m**, **\--midi-note** *`<midi-note>`*
 :   Select midi note to play, in case an SMSet-File was specified as input file.
 
 # SEE ALSO {#see_also}

@@ -14,15 +14,16 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "smsfimport" "1" "2025-08-21" "1.0.0-beta2" "SpectMorph Manual"
+.TH "smsfimport" "1" "2026-01-06" "1.0.0-beta2" "SpectMorph Manual"
 .hy
 .SH NAME
 .PP
 smsfimport - program to create SpectMorph models from SoundFont presets
 .SH SYNOPSIS
 .PP
-\f[B]smsfimport\f[R] \f[I]\f[R] \f[I]\f[R] [\f[I]OPTIONS\f[R]]
-[\f[I]...\f[R]]
+\f[B]smsfimport\f[R] \f[I]\f[VI]<command>\f[I]\f[R]
+\f[I]\f[VI]<SoundFontFile>\f[I]\f[R] [\f[I]OPTIONS\f[R]]
+[\f[I]\f[VI]<command specific args>\f[I]...\f[R]]
 .SH DESCRIPTION
 .PP
 \f[B]smsfimport\f[R] can be used to convert SoundFont presets (.sf2
@@ -42,14 +43,14 @@ Shows a brief help message.
 Prints out smsfimport version.
 .SH COMMANDS
 .TP
-\f[B]list\f[R] \f[I]\f[R]
+\f[B]list\f[R] \f[I]\f[VI]<SoundFontFile>\f[I]\f[R]
 Shows all presets contained in the SoundFontFile.
 .TP
-\f[B]dump\f[R] \f[I]\f[R] [ \f[I]\f[R] ]
+\f[B]dump\f[R] \f[I]\f[VI]<SoundFontFile>\f[I]\f[R] [ \f[I]\f[VI]<PresetName>\f[I]\f[R] ]
 Displays a detailed view of the parameters specified for a preset (or
 for all presets).
 .TP
-\f[B]import\f[R] \f[I]\f[R] \f[I]\f[R]
+\f[B]import\f[R] \f[I]\f[VI]<SoundFontFile>\f[I]\f[R] \f[I]\f[VI]<PresetName>\f[I]\f[R]
 Imports a preset, creating a *.smset file.
 For preset \[dq]Grand Piano\[dq], the resulting output would be
 \[dq]grand_piano.smset\[dq].
