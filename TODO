@@ -1,7 +1,6 @@
 1.0.0 (-beta3)?:
 - linux filedialog doesn't work on some dirs (~/annex/music_lofi/artists/assembly2005/fast_music/ -> show all -> crash)
 - test mp3 support
-- update manual
 
 - encoder memory usage (branch)
 - does mono work well with clap / clap ids?
