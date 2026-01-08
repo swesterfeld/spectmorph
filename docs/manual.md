@@ -301,6 +301,52 @@ This effect adds vibrato, controlled by the **Depth** and **Frequency**
 parameters. If **Attack** is set, the vibrato builds up slowly during
 the selected time.
 
+# Parameter Modulation
+
+Some parameters of some of the operators are modulatable. These are displayed
+with a small triangle next to the parameter name. For instance the
+**Linear Morph** *Morphing* parameter has a range from -1 to 1 and is
+modulatable or the **Output** *Cutoff* filter parameter has a range from
+20 to 30000 Hz and is modulatable.
+
+Clicking on the parameter name opens a dialog where parameter modulation
+can be configured. The parameter modulation has two parts: one main
+controller and a modulation list.
+
+## Main Controller
+
+The main controller can either be **Gui Slider** - in this case you
+can manually adjust the parameter using a slider. For new operators,
+this is the default. So by default you can adjust parameters like the
+**Linear Morph** *Morphing* parameter directly at the UI.
+
+The main controller can also be **Control Signal #1..#4**. In this
+case the parameter is controllable from you DAW, so it supports direct
+automation.
+
+The main controller can also be **Velocity** in which case the velocity
+is assigned to the parameter.
+
+Finally, the main controller can be any **LFO**, **Envelope** or **Key
+Track** operator defined in the morph plan.
+
+## Modulation List
+
+In addition to the main controller, the modulation list adds an offset
+to the parameter. The modulation list can have any number of entries.
+Like for the main controller, it supports  **Control Signal #1..#4**,
+**Velocity**, **LFO**, **Envelope** or **Key Track** operators. The
+result is the sum of the main controller and all entries of the
+modulation list.
+
+Each entry has a *direction* that is either **unipolar** or **bipolar**.
+For **unipolar** entries, the main controller parameter is modified
+in one direction only, whereas for **bipolar** entries, the main
+controller parameter is modified in both directions.
+
+Each entry has an *amount* that determines how much the main controller
+is affected by the modulation signal.
+
 # Instrument Editor
 
 ## Overview
