@@ -166,14 +166,25 @@ AudioTool::auto_tune_smooth (Audio& audio, int partials, double smooth_ms, doubl
   for (const auto& block : audio.contents)
     freq_vector.push_back (block.estimate_fundamental (partials));
 
+  int smooth_range = 0;
+  for (size_t d = 0; d < audio.contents.size(); d++)
+    {
+      double distance_ms = audio.frame_step_ms * double (d);
+      if (distance_ms < smooth_ms)
+        smooth_range = d;
+      else
+        {
+          break;
+        }
+    }
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
       double avg = 0;
       int count = 0;
-      for (size_t j = 0; j < audio.contents.size(); j++)
+      for (int d = -smooth_range; d <= smooth_range; d++)
         {
-          double distance_ms = audio.frame_step_ms * fabs (double (f) - double (j));
-          if (distance_ms < smooth_ms)
+          int j = int (f) + d;
+          if (j >= 0 && j < int (audio.contents.size()))
             {
               avg += freq_vector[j];
               count += 1;
