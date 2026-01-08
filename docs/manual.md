@@ -420,6 +420,11 @@ trying to click on some of the notes while your selected sample is played you
 can find the correct pitch. Once you are certain what the pitch should be,
 double-click and close the dialog.
 
+There is a **Pitch Detection** algorithm that can be used by clicking the
+*Detect Midi Note* button. For many cases this will find the right midi note
+automatically, however keep in mind that this can fail in some cases, so after
+detection you should verify that the detected note is really correct.
+
 ## Volume Normalization
 
 Usually, we want that all samples that a user instruments contains are played
