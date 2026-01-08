@@ -1,9 +1,9 @@
 1.0.0 (-beta3)?:
 - linux filedialog doesn't work on some dirs (~/annex/music_lofi/artists/assembly2005/fast_music/ -> show all -> crash)
 - test mp3 support
-- encoder memory usage (branch)
 - update manual
 
+- encoder memory usage (branch)
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 - debug difference between aurora mac aarch64-apple-darwin23.5.0 + sanitizers and linux
