@@ -1,6 +1,34 @@
 ## SpectMorph 1.0.0 beta3
 
+#### New Features
+
+* Implement pitch detection algorithm for instrument editor and smenc (#31).
+* Support mp3 format for static plugins and builds with new libsndfile.
+
+#### Instrument Updates
+
+* Trumpet, French Horn: ping pong loop, better tuning
+* Bass Trombone: ping pong loop, volume normalization, tuning
+* Alto Saxophone: ping pong loop
+
+#### Reduce Memory Usage after Unload
+* Avoid global constructors / destructors.
+* Use our own TextRenderer instead of cairo to be able to free font cache.
+* Ship necessary fonts on macOS for TextRenderer.
+* Free various tables and other bits of static data when unloading.
+
+#### Fixes
+* Don't crash on invalid utf8 during conversion (use replacement char).
+* Fix crash caused by multiple threads modifying control events.
 * Fix CLAP's get factory implementation (#30).
+* Various ASAN / UBSAN fixes.
+* Fix RTSAN issue: make FFT realtime safe.
+* Avoid allocating memory in RT thread if events need to be sorted.
+* Fix (unlikely) LineEdit crash.
+* Validate input for smenc -m and other utils where an integer is expected (#31).
+* Build system updates.
+* Convert manpages to markdown.
+* Documentation updates.
 
 ## SpectMorph 1.0.0 beta2
 
