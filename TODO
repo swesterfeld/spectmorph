@@ -2,7 +2,6 @@
 - linux filedialog doesn't work on some dirs (~/annex/music_lofi/artists/assembly2005/fast_music/ -> show all -> crash)
 - test mp3 support
 - encoder memory usage (branch)
-- smooth tune from vocalizer (branch)
 - update manual
 
 - does mono work well with clap / clap ids?
