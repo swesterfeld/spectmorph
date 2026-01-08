@@ -133,7 +133,7 @@ public:
   set_parent (PuglNativeWindow win_id)
   {
     event_loop.reset (new EventLoop());
-    window.reset (new MorphPlanWindow (*event_loop, "SpectMorph VST", win_id, false, morph_plan));
+    window.reset (new MorphPlanWindow (*event_loop, "SpectMorph CLAP", win_id, false, morph_plan));
     connect (window->signal_update_size, this, &ClapUI::on_update_window_size);
 
     window->show();
