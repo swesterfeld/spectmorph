@@ -6,24 +6,24 @@
 #include <stdarg.h>
 #include <string.h>
 #include <glib.h>
-#include <set>
+#include <unordered_set>
 #include <mutex>
 #include <atomic>
 
 using namespace SpectMorph;
 
 using std::string;
-using std::set;
+using std::unordered_set;
 
 namespace
 {
 
 struct DebugGlobal
 {
-  set<string> active_areas;
-  FILE       *file = NULL;
-  string      filename = "smdebug.log";
-  std::mutex  mutex;
+  unordered_set<string> active_areas;
+  FILE                 *file = NULL;
+  string                filename = "smdebug.log";
+  std::mutex            mutex;
 
   void debugv (const char *area, const char *format, va_list vargs);
 };
