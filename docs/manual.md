@@ -77,8 +77,34 @@ instance `example.wav` with something else. In order to use samples in the
 **WavSource** operator, some editing is required to provide informations
 necessary for morphing.
 
-User defined instruments are stored into one of 128 possible slots and
-can be created/edited using the [Instrument Editor](#instrument-editor).
+Instruments can be created/edited using the [Instrument Editor](#instrument-editor).
+
+Bank
+
+: Instruments are organized in banks, and there is no limit for the number
+of banks that can be created.
+
+Instrument
+
+: For each bank, user defined instruments are stored into one of 128 possible
+slots.
+
+Play Mode
+
+: By default, each instrument is played from start to the end, possibly using
+the loop that was defined. However it is possible to use *Custom Position*
+as play mode, then the offset in the instrument position can be controlled
+using a parameter (like Control #1), LFO or similar.
+
+Formants
+
+: By default (*Repitch*), if the note of the instrument doesn't match the note
+of the recording, the sound is pitched up/down in a simple way. This can sound
+artificial in many cases (like vocal sounds). There are two alternative
+algorithms implemented: *Preserve Spectral Envelope* pitches the sound up and
+corrects the spectral envelope afterwards. *Harmonic Resynthesis* rebuilds the
+sound from scratch using the harmonics gathered during analysis. Both
+algorithms sound better than *Repitch* for vocals and other use cases.
 
 ## Linear Morph
 
@@ -95,11 +121,10 @@ Source B
 
 : Set the second source used for morphing.
 
-Control Input
+Morphing
 
-: Specify how to control the morphing, can be **Gui Slider** for doing it
-manually, external **Control Signal #1/#2** or another source (typically
-[LFO](#lfo)).
+: Parameter to control the morphing between Source A and B, can be set
+at the UI, use external Control #1 or another source (typically [LFO](#lfo)).
 
 dB Linear Morphing
 
@@ -161,6 +186,38 @@ means that each voice has its own phase. If the **Sync Phase for all voices**
 is selected, all voices share the same phase (i.e. all voices go up and down at
 the same time).
 
+If **Beat Sync** is activated, the LFO is using musical time (notes) as
+speed instead of a frequency.
+
+## Key Track
+
+The **Key Track** operator uses the input midi note to generate a control
+signal. A custom curve can be defined to specify a mapping from midi note
+0..127 to the control output. This can be used to control another parameter
+like the morphing of a **Linear Morph**. An example would be using
+*Bass Trombone* for low notes and *Trumpet* for high notes, and a mixture
+of both in between.
+
+## Envelope
+
+The **Envelope** operator creates a custom envelope with a curve that
+changes over time.
+
+Loop Type
+
+: This can be *No Loop* - envelope starts at the start and ends at the
+end, *Sustain Loop* - envelope stops in a single sustain state, *Forward
+Loop* or *Ping Pong Loop* - envelope keeps looping between two points.
+
+Unit
+
+: The unit for the time parameter, can be seconds/minutes or notes
+(musical time).
+
+Time
+
+: Parameter for the time that it takes to play the whole envelope.
+
 ## Output
 
 The **Output** operator controls how the sound generated from the sources at
@@ -198,6 +255,39 @@ using the **Skip** parameter. So if the ADSR is enabled, we play somewhere
 from the middle of the input, in order to be able to produce a sharp attack.
 
 <!-- FIXME: this probably could be done more elegantly -->
+
+### Filter
+
+A filter can be used to filter the output signal.
+
+Mode
+
+: Set one of various filter modes that can be used.
+
+ADSR
+
+: The ADSR envelope that is used for the filter cutoff frequency.
+
+Depth
+
+: The strength of the ADSR envelope -> Cutoff modulation in semi tones.
+
+Key Tracking
+
+: Modification of the Cutoff frequency depending on the note frequency.
+
+Cutoff
+
+: Filter Cutoff parameter, can be modulated (for instance with an LFO).
+
+Resonance
+
+: Filter Resonance parameter, can be modulated.
+
+Drive
+
+: Drive for the Filter, this can be used to make the filter saturate
+or distort during processing, can be modulated.
 
 ### Portamento
 
