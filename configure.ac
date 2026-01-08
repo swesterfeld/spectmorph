@@ -1,6 +1,6 @@
-AC_INIT([spectmorph],[1.0.0-beta2])
+AC_INIT([spectmorph],[1.0.0-beta3])
 INST_TAG=$PACKAGE_VERSION
-INST_SHA1SUM=2ee20146d49e56fb08fd5d339618b22421f0e215
+INST_SHA1SUM=a2c60209c2b75819c1dc2022d7c82b5ddb24d444
 LV2_MINOR_VERSION=8
 
 dnl we don't try to map our version numbers to lv2, instead we increment lv2 minor
