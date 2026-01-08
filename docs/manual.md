@@ -94,7 +94,9 @@ Play Mode
 : By default, each instrument is played from start to the end, possibly using
 the loop that was defined. However it is possible to use *Custom Position*
 as play mode, then the offset in the instrument position can be controlled
-using a parameter (like Control #1), LFO or similar.
+using a parameter (like Control #1), LFO or similar. The range of the
+positions that are used during replay can be defined by setting the loop
+start and loop end parameters in the instrument editor.
 
 Formants
 
