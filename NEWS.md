@@ -26,6 +26,7 @@
 * Avoid allocating memory in RT thread if events need to be sorted.
 * Fix (unlikely) LineEdit crash.
 * Validate input for smenc -m and other utils where an integer is expected (#31).
+* Fix smooth tune performance for long input files.
 * Build system updates.
 * Convert manpages to markdown.
 * Documentation updates.
