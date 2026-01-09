@@ -90,22 +90,22 @@ jobs:
     - name: Test macOS Build with Sanitizers
       shell: bash
       run: misc/macbuild.sh sanitize
-  macos-13:
-    runs-on: macos-13
+  macos-14:
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v3
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
-    - name: Test macOS 13 build
+    - name: Test macOS 14 build
       shell: bash
       run: misc/macbuild.sh
-  macos-13-sanitizers:
-    runs-on: macos-13
+  macos-14-sanitizers:
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v3
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
-    - name: Test macOS 13 build with Sanitizers
+    - name: Test macOS 14 build with Sanitizers
       shell: bash
       run: misc/macbuild.sh sanitize
   windows:
