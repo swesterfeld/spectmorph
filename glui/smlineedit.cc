@@ -163,8 +163,10 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
       else if (key_event.special == PUGL_KEY_BACKSPACE)
         {
           if (cursor_pos > 0 && cursor_pos <= int (text32.size()))
-            text32.erase (cursor_pos - 1, 1);
-          cursor_pos--;
+            {
+              text32.erase (cursor_pos - 1, 1);
+              cursor_pos--;
+            }
         }
       else /* DELETE */
         {
