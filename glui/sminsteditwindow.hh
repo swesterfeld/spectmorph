@@ -36,10 +36,9 @@ class IconButton;
 class InstEditWindow;
 class InstEditVolume;
 class InstEditParams;
+
 class InstEditBackend
 {
-  BuilderThread           builder_thread;
-
   std::mutex              result_mutex;
   bool                    result_updated = false;
   std::unique_ptr<WavSet> result_wav_set;
@@ -47,6 +46,10 @@ class InstEditBackend
   SynthInterface         *synth_interface;
 
   std::unique_ptr<InstEncCache::Group> cache_group;
+
+  // declare BuilderThread as last member to ensure that the thread joins before
+  // state that it needs (like result_mutex) is destroyed
+  BuilderThread           builder_thread;
 
 public:
   InstEditBackend (SynthInterface *synth_interface);
