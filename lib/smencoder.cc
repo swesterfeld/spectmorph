@@ -730,7 +730,7 @@ Encoder::spectral_subtract()
 	}
 
       if (killed ("_subtract", frame & 7))
-        return;
+        break; // break to avoid leaking fft_in, fft_out
     }
   FFT::free_array_float (fft_in);
   FFT::free_array_float (fft_out);
