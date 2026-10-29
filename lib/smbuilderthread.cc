@@ -146,8 +146,7 @@ BuilderThread::run()
         {
           std::unique_lock<std::mutex> lck (mutex);
 
-          if (!thread_quit)
-            cond.wait (lck);
+          cond.wait (lck, [this]() { return thread_quit || !todo.empty(); });
         }
     }
 }
