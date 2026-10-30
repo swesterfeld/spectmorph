@@ -63,6 +63,9 @@ MorphSource::load (InFile& ifile)
   bool read_ok = true;
   while (ifile.event() != InFile::END_OF_FILE)
     {
+      if (ifile.event() == InFile::READ_ERROR)
+        return false;
+
       if (ifile.event() == InFile::STRING)
         {
           if (ifile.event_name() == "instrument")

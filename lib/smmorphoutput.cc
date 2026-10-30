@@ -133,6 +133,9 @@ MorphOutput::load (InFile& ifile)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
+      if (ifile.event() == InFile::READ_ERROR)
+        return false;
+
       if (read_property_event (ifile))
         {
           // property has been read, so we ignore the event
