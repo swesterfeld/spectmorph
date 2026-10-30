@@ -278,19 +278,52 @@ MorphOperatorConfig::~MorphOperatorConfig()
 #include "smmorphkeytrack.hh"
 #include "smmorphenvelope.hh"
 
+namespace
+{
+
+struct OperatorType
+{
+  const char *name;
+  MorphOperator *(*create) (MorphPlan *plan);
+};
+
+template<class T>
+MorphOperator *
+create_operator (MorphPlan *plan)
+{
+  return new T (plan);
+}
+
+constexpr OperatorType operator_types[] = {
+  { "SpectMorph::MorphSource",    create_operator<MorphSource> },
+  { "SpectMorph::MorphWavSource", create_operator<MorphWavSource> },
+  { "SpectMorph::MorphLinear",    create_operator<MorphLinear> },
+  { "SpectMorph::MorphGrid",      create_operator<MorphGrid> },
+  { "SpectMorph::MorphOutput",    create_operator<MorphOutput> },
+  { "SpectMorph::MorphLFO",       create_operator<MorphLFO> },
+  { "SpectMorph::MorphKeyTrack",  create_operator<MorphKeyTrack> },
+  { "SpectMorph::MorphEnvelope",  create_operator<MorphEnvelope> }
+};
+
+}
+
+vector<string>
+MorphOperator::list_types()
+{
+  vector<string> types;
+  for (const auto& entry : operator_types)
+    types.push_back (entry.name);
+  return types;
+}
+
 MorphOperator *
 MorphOperator::create (const string& type, MorphPlan *plan)
 {
   g_return_val_if_fail (plan != NULL, NULL);
 
-  if (type == "SpectMorph::MorphSource")      return new MorphSource (plan);
-  if (type == "SpectMorph::MorphWavSource")   return new MorphWavSource (plan);
-  if (type == "SpectMorph::MorphLinear")      return new MorphLinear (plan);
-  if (type == "SpectMorph::MorphGrid")        return new MorphGrid (plan);
-  if (type == "SpectMorph::MorphOutput")      return new MorphOutput (plan);
-  if (type == "SpectMorph::MorphLFO")         return new MorphLFO (plan);
-  if (type == "SpectMorph::MorphKeyTrack")    return new MorphKeyTrack (plan);
-  if (type == "SpectMorph::MorphEnvelope")    return new MorphEnvelope (plan);
+  for (const auto& entry : operator_types)
+    if (type == entry.name)
+      return entry.create (plan);
 
   return NULL;
 }
