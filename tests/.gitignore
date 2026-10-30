@@ -61,6 +61,7 @@ testpsola
 testroundperf
 testceventlock
 testpitchdetect
+testmorphload
 test*.exe
 .libs
 .deps

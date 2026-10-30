@@ -141,6 +141,7 @@ public:
     return PtrID (this);
   }
 
+  static std::vector<std::string> list_types();
   static MorphOperator *create (const std::string& type, MorphPlan *plan);
 };
 

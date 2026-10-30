@@ -13,6 +13,7 @@
 #include "smutils.hh"
 
 #include <map>
+#include <memory>
 #include <assert.h>
 
 using namespace SpectMorph;
@@ -146,7 +147,7 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
 
   map<string, vector<unsigned char> > blob_data_map;
   string section;
-  MorphOperator *load_op = NULL;
+  std::unique_ptr<MorphOperator> load_op;
   string         load_name;
   string         load_id;
   bool           load_folded = false;
@@ -154,6 +155,12 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
+      if (ifile.event() == InFile::READ_ERROR)
+        {
+          error = Error::Code::PARSE_ERROR;
+          break;
+        }
+
       if (ifile.event() == InFile::BEGIN_SECTION)
         {
           if (section != "")
@@ -192,7 +199,7 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
                 {
                   string operator_type = ifile.event_data();
 
-                  load_op = MorphOperator::create (operator_type, this);
+                  load_op.reset (MorphOperator::create (operator_type, this));
                   if (!load_op)
                     {
                       g_printerr ("unknown operator type %s\n", operator_type.c_str());
@@ -238,6 +245,11 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
 
                   InFile blob_infile (MMapIn::open_vector (blob_data));
                   bool read_ok = load_op->load (blob_infile);
+                  if (blob_infile.event() == InFile::READ_ERROR)
+                    {
+                      error = Error::Code::PARSE_ERROR;
+                      break;
+                    }
                   if (!read_ok)
                     {
                       string msg = string_printf ("%s: something went wrong during load\n", load_op->type_name().c_str());
@@ -246,7 +258,7 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
                       // don't abort loading - ignore load errors here, at least doing things as good as we can
                     }
 
-                  add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
+                  add_operator (load_op.release(), ADD_POS_END, load_name, load_id, load_folded);
                 }
             }
         }
@@ -266,16 +278,15 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
 
                   InFile blob_infile (MMapIn::open_vector (blob_data));
                   load_op->load (blob_infile);
+                  if (blob_infile.event() == InFile::READ_ERROR)
+                    {
+                      error = Error::Code::PARSE_ERROR;
+                      break;
+                    }
 
-                  add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
+                  add_operator (load_op.release(), ADD_POS_END, load_name, load_id, load_folded);
                 }
             }
-        }
-      else if (ifile.event() == InFile::READ_ERROR)
-        {
-          g_printerr ("read error\n");
-          error = Error::Code::PARSE_ERROR;
-          break;
         }
       ifile.next_event();
     }

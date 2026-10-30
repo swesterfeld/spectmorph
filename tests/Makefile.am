@@ -16,7 +16,7 @@ CLEANFILES += sin440-4567.wav saw440x.wav
 TESTS_ENVIRONMENT = SPECTMORPH_MAKE_CHECK=1
 
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq testbesseli0 testsse testblockmath testceventlock testpitchdetect
+        testidb testifreq testbesseli0 testsse testblockmath testceventlock testpitchdetect testmorphload
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testparamupdate testloopindex testoutfileperf \
@@ -241,3 +241,6 @@ test-porta:
 
 list-refs:
 	@echo $(REFS)
+
+testmorphload_SOURCES = testmorphload.cc
+testmorphload_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
