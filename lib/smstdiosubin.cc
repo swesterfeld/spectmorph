@@ -29,7 +29,7 @@ StdioSubIn::open (const std::string& filename, size_t pos, size_t len)
       return nullptr;
     }
 
-  if (pos > LONG_MAX || fseek (file, pos, SEEK_SET) != 0)
+  if (pos > size_t (st.st_size) || pos > LONG_MAX || fseek (file, pos, SEEK_SET) != 0)
     {
       fclose (file);
       return nullptr;
@@ -87,8 +87,7 @@ StdioSubIn::read (void *ptr, size_t size)
 bool
 StdioSubIn::skip (size_t size)
 {
-  size_t remaining;
-  if (get_remaining (remaining) && size <= remaining && size <= LONG_MAX)
+  if (size <= get_remaining() && size <= LONG_MAX)
     {
       if (fseek (file, size, SEEK_CUR) == 0)
         {
@@ -118,13 +117,12 @@ StdioSubIn::open_subfile (size_t pos, size_t len)
   return nullptr;
 }
 
-bool
-StdioSubIn::get_remaining (size_t& remaining)
+size_t
+StdioSubIn::get_remaining()
 {
-  if (file_start > file_size || file_pos > file_size - file_start)
-    return false;
+  if (file_pos > file_size - file_start)
+    return 0;
 
-  remaining = file_size - file_start - file_pos;
-  remaining = std::min (remaining, file_pos <= file_len ? file_len - file_pos : size_t (0));
-  return true;
+  const size_t remaining = file_size - file_start - file_pos;
+  return std::min (remaining, file_pos <= file_len ? file_len - file_pos : size_t (0));
 }

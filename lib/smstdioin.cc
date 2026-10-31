@@ -67,8 +67,7 @@ StdioIn::read (void *ptr, size_t size)
 bool
 StdioIn::skip (size_t size)
 {
-  size_t remaining;
-  if (get_remaining (remaining) && size <= remaining && size <= LONG_MAX
+  if (size <= get_remaining() && size <= LONG_MAX
       && fseek (file, size, SEEK_CUR) == 0)
     {
       file_pos += size;
@@ -95,12 +94,8 @@ StdioIn::open_subfile (size_t pos, size_t len)
   return StdioSubIn::open (filename, pos, len);
 }
 
-bool
-StdioIn::get_remaining (size_t& remaining)
+size_t
+StdioIn::get_remaining()
 {
-  if (file_pos > file_size)
-    return false;
-
-  remaining = file_size - file_pos;
-  return true;
+  return file_pos <= file_size ? file_size - file_pos : 0;
 }

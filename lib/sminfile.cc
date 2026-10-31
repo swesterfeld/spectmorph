@@ -299,8 +299,7 @@ InFile::read_raw_block (vector<T>& block)
     return false;
 
   const size_t bytes = count * sizeof (T);
-  size_t remaining = 0;
-  if (!file->get_remaining (remaining) || bytes > remaining)
+  if (bytes > file->get_remaining())
     return false;
 
   if (count > block.max_size())

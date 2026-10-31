@@ -68,8 +68,7 @@ MMapIn::get_byte()
 size_t
 MMapIn::read (void *ptr, size_t size)
 {
-  size_t remaining;
-  if (!size || !get_remaining (remaining) || size > remaining)
+  if (!size || size > get_remaining())
     return 0;
 
   memcpy (ptr, pos, size);
@@ -80,8 +79,7 @@ MMapIn::read (void *ptr, size_t size)
 bool
 MMapIn::skip (size_t size)
 {
-  size_t remaining;
-  if (!get_remaining (remaining) || size > remaining)
+  if (size > get_remaining())
     return false;
 
   if (size)
@@ -92,7 +90,7 @@ MMapIn::skip (size_t size)
 const unsigned char *
 MMapIn::mmap_mem (size_t& remaining)
 {
-  remaining = mapend - pos;
+  remaining = get_remaining();
   return pos;
 }
 
@@ -108,9 +106,8 @@ MMapIn::open_subfile (size_t pos, size_t len)
   return GenericInP (new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */));
 }
 
-bool
-MMapIn::get_remaining (size_t& remaining)
+size_t
+MMapIn::get_remaining()
 {
-  remaining = pos == mapend ? 0 : mapend - pos;
-  return true;
+  return pos == mapend ? 0 : mapend - pos;
 }
