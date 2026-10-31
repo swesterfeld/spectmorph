@@ -65,37 +65,32 @@ MMapIn::get_byte()
     return EOF;
 }
 
-int
+size_t
 MMapIn::read (void *ptr, size_t size)
 {
-  if (pos + size <= mapend)
-    {
-      memcpy (ptr, pos, size);
-      pos += size;
-      return size;
-    }
-  else
+  if (!size || size > get_remaining())
     return 0;
+
+  memcpy (ptr, pos, size);
+  pos += size;
+  return size;
 }
 
 bool
 MMapIn::skip (size_t size)
 {
-  if (pos + size <= mapend)
-    {
-      pos += size;
-      return true;
-    }
-  else
-    {
-      return false;
-    }
+  if (size > get_remaining())
+    return false;
+
+  if (size)
+    pos += size;
+  return true;
 }
 
 const unsigned char *
 MMapIn::mmap_mem (size_t& remaining)
 {
-  remaining = mapend - pos;
+  remaining = get_remaining();
   return pos;
 }
 
@@ -109,4 +104,10 @@ GenericInP
 MMapIn::open_subfile (size_t pos, size_t len)
 {
   return GenericInP (new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */));
+}
+
+size_t
+MMapIn::get_remaining()
+{
+  return pos == mapend ? 0 : mapend - pos;
 }

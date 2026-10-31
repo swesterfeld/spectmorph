@@ -3,6 +3,7 @@
 #include "sminfile.hh"
 #include "smutils.hh"
 #include <assert.h>
+#include <cstring>
 #include <glib.h>
 
 using std::string;
@@ -100,129 +101,134 @@ InFile::read_raw_string (string& str)
 void
 InFile::next_event()
 {
-  int c = file->get_byte();
-
-  if (c == 'Z')  // eof
+  if (!file)
     {
-      if (file->get_byte() == EOF)   // Z needs to be followed by EOF
-        current_event = END_OF_FILE;
-      else                           // Z and more stuff is an error
-        current_event = READ_ERROR;
+      current_event = READ_ERROR;
       return;
     }
-  else if (c == 'B')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        current_event = BEGIN_SECTION;
-    }
-  else if (c == 'E')
-    {
-      current_event = END_SECTION;
-    }
-  else if (c == 'f')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        if (read_raw_float (current_event_float))
-          current_event = FLOAT;
-    }
-  else if (c == 'i')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        if (read_raw_int (current_event_int))
-          current_event = INT;
-    }
-  else if (c == 'b')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        if (read_raw_bool (current_event_bool))
-          current_event = BOOL;
-    }
-  else if (c == 's')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        if (read_raw_string (current_event_data))
-          current_event = STRING;
-    }
-  else if (c == 'F')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
-        {
-          if (skip_events.find (current_event_str) != skip_events.end())
-            {
-              if (skip_raw_float_block())
-                {
-                  next_event();
-                  return;
-                }
-            }
-          else
-            {
-              if (read_raw_float_block (current_event_float_block))
-                current_event = FLOAT_BLOCK;
-            }
-        }
-    }
-  else if (c == '6') // 16bit block
-    {
-      current_event = READ_ERROR;
 
-      if (read_raw_string (current_event_str))
+  // Skipped blocks are consumed iteratively, without growing the call stack.
+  for (;;)
+    {
+      int c = file->get_byte();
+
+      if (c == 'Z')  // eof
         {
-          if (skip_events.find (current_event_str) != skip_events.end())
+          if (file->get_byte() == EOF)   // Z needs to be followed by EOF
+            current_event = END_OF_FILE;
+          else                           // Z and more stuff is an error
+            current_event = READ_ERROR;
+          return;
+        }
+      else if (c == 'B')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
+            current_event = BEGIN_SECTION;
+        }
+      else if (c == 'E')
+        {
+          current_event = END_SECTION;
+        }
+      else if (c == 'f')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
+            if (read_raw_float (current_event_float))
+              current_event = FLOAT;
+        }
+      else if (c == 'i')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
+            if (read_raw_int (current_event_int))
+              current_event = INT;
+        }
+      else if (c == 'b')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
+            if (read_raw_bool (current_event_bool))
+              current_event = BOOL;
+        }
+      else if (c == 's')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
+            if (read_raw_string (current_event_data))
+              current_event = STRING;
+        }
+      else if (c == 'F')
+        {
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
             {
-              if (skip_raw_uint16_block())
+              if (skip_events.find (current_event_str) != skip_events.end())
                 {
-                  next_event();
-                  return;
+                  if (skip_raw_float_block())
+                    continue;
+                }
+              else
+                {
+                  if (read_raw_float_block (current_event_float_block))
+                    current_event = FLOAT_BLOCK;
                 }
             }
-          else
+        }
+      else if (c == '6') // 16bit block
+        {
+          current_event = READ_ERROR;
+
+          if (read_raw_string (current_event_str))
             {
-              if (read_raw_uint16_block (current_event_uint16_block))
-                current_event = UINT16_BLOCK;
+              if (skip_events.find (current_event_str) != skip_events.end())
+                {
+                  if (skip_raw_uint16_block())
+                    continue;
+                }
+              else
+                {
+                  if (read_raw_uint16_block (current_event_uint16_block))
+                    current_event = UINT16_BLOCK;
+                }
             }
         }
-    }
-  else if (c == 'O')
-    {
-      current_event = READ_ERROR;
-      if (read_raw_string (current_event_str))
+      else if (c == 'O')
         {
-          int blob_size;
-          if (read_raw_int (blob_size))
+          current_event = READ_ERROR;
+          if (read_raw_string (current_event_str))
             {
-              string blob_sum;
-              if (read_raw_string (blob_sum))
+              int blob_size;
+              if (read_raw_int (blob_size))
                 {
-                  if (blob_size == -1)
+                  string blob_sum;
+                  if (read_raw_string (blob_sum))
                     {
-                      current_event = BLOB_REF;
-                      current_event_blob_sum = blob_sum;
-                    }
-                  else
-                    {
-                      int blob_pos = file->get_pos();
-                      if (file->skip (blob_size)) // skip actual blob data
+                      if (blob_size == -1)
                         {
-                          current_event = BLOB;
-                          current_event_blob_size = blob_size;
-                          current_event_blob_pos  = blob_pos;
-                          current_event_blob_sum  = blob_sum;
+                          current_event = BLOB_REF;
+                          current_event_blob_sum = blob_sum;
+                        }
+                      else if (blob_size >= 0)
+                        {
+                          size_t blob_pos = file->get_pos();
+                          if (file->skip (blob_size)) // skip actual blob data
+                            {
+                              current_event = BLOB;
+                              current_event_blob_size = blob_size;
+                              current_event_blob_pos  = blob_pos;
+                              current_event_blob_sum  = blob_sum;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-  else
-    {
-      current_event = READ_ERROR;
+      else
+        {
+          current_event = READ_ERROR;
+        }
+      return;
     }
 }
 
@@ -274,67 +280,78 @@ InFile::read_raw_float (float &f)
 }
 
 bool
-InFile::read_raw_float_block (vector<float>& fb)
+InFile::read_raw_block_size (size_t& count)
 {
   int size;
-  if (!read_raw_int (size))
+  if (!read_raw_int (size) || size < 0)
     return false;
 
-  fb.resize (size);
-  if (size > 0)
-    {
-      int *buffer = reinterpret_cast <int*> (fb.data());
+  count = size;
+  return true;
+}
 
-      if (file->read (buffer, fb.size() * 4) != size * 4)
-        return false;
+template<class T>
+bool
+InFile::read_raw_block (vector<T>& block)
+{
+  size_t count;
+  if (!read_raw_block_size (count))
+    return false;
+
+  const size_t bytes = count * sizeof (T);
+  if (bytes > file->get_remaining())
+    return false;
+
+  if (count > block.max_size())
+    return false;
+
+  block.resize (count);
+  return bytes == 0 || file->read (block.data(), bytes) == bytes;
+}
+
+bool
+InFile::read_raw_float_block (vector<float>& fb)
+{
+  if (!read_raw_block (fb))
+    return false;
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
-      for (size_t x = 0; x < fb.size(); x++)
-        buffer[x] = GINT32_FROM_LE (buffer[x]);
-#endif
+  for (auto& value : fb)
+    {
+      uint32_t bits;
+      memcpy (&bits, &value, sizeof (bits));
+      bits = GUINT32_FROM_LE (bits);
+      memcpy (&value, &bits, sizeof (bits));
     }
+#endif
   return true;
 }
 
 bool
 InFile::read_raw_uint16_block (vector<uint16_t>& ib)
 {
-  int size;
-  if (!read_raw_int (size))
+  if (!read_raw_block (ib))
     return false;
 
-  ib.resize (size);
-  if (size > 0)
-    {
-      if (file->read (ib.data(), ib.size() * 2) != size * 2)
-        return false;
-
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
-      for (size_t x = 0; x < ib.size(); x++)
-        ib[x] = GUINT16_FROM_LE (ib[x]);
+  for (auto& value : ib)
+    value = GUINT16_FROM_LE (value);
 #endif
-    }
   return true;
 }
 
 bool
 InFile::skip_raw_float_block()
 {
-  int size;
-  if (!read_raw_int (size))
-    return false;
-
-  return file->skip (size * 4);
+  size_t count;
+  return read_raw_block_size (count) && file->skip (count * sizeof (float));
 }
 
 bool
 InFile::skip_raw_uint16_block()
 {
-  int size;
-  if (!read_raw_int (size))
-    return false;
-
-  return file->skip (size * 2);
+  size_t count;
+  return read_raw_block_size (count) && file->skip (count * sizeof (uint16_t));
 }
 
 /**
@@ -463,7 +480,7 @@ InFile::event_blob_sum()
 }
 
 /**
- * Add event names to skip (currently only implemented for FLOAT_BLOCK events); this
+ * Add event names to skip (implemented for FLOAT_BLOCK and UINT16_BLOCK events); this
  * speeds up reading files, while ignoring certain events.
  *
  * \param skip_event name of the event to skip

@@ -38,7 +38,7 @@ public:
    *
    * \returns the number of bytes successfully read or 0; can be less than size on EOF/error
    */
-  virtual int read (void *ptr, size_t size) = 0;
+  virtual size_t read (void *ptr, size_t size) = 0;
   /**
    * Skips a block of input data.
    *
@@ -53,6 +53,11 @@ public:
    * \returns the position in the input stream
    */
   virtual size_t get_pos() = 0;
+  /**
+   * Get the number of remaining input bytes without consuming data.
+   * Returns zero at the end of the input.
+   */
+  virtual size_t get_remaining() = 0;
   /**
    * Try to access the memory of a memory-based input stream. This will fail for streams
    * that are not memory mapped. This function is useful because it allows writing faster

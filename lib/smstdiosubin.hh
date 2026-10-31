@@ -17,18 +17,21 @@ class StdioSubIn final : public GenericIn
   FILE *file;
   size_t file_pos;
   size_t file_len;
+  size_t file_size;
+  size_t file_start;
 
-  StdioSubIn (FILE *file, size_t pos, size_t len);
+  StdioSubIn (FILE *file, size_t pos, size_t len, size_t file_size);
 public:
   ~StdioSubIn();
 
   static GenericInP open (const std::string& filename, size_t pos, size_t len);
 
   int get_byte() override;     // like fgetc
-  int read (void *ptr, size_t size) override;
+  size_t read (void *ptr, size_t size) override;
   bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos() override;
+  size_t get_remaining() override;
   GenericInP open_subfile (size_t pos, size_t len) override;
 };
 

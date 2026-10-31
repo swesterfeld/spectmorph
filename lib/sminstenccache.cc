@@ -131,7 +131,7 @@ InstEncCache::cache_try_load_L (const string& cache_key, const string& need_vers
   if (version == need_version)
     {
       vector<unsigned char> data (data_size);
-      if (in_file->read (data.data(), data.size()) == data_size)
+      if (in_file->read (data.data(), data.size()) == data.size())
         {
           string load_data_hash = sha1_hash (data.data(), data.size());
           if (load_data_hash == data_hash)
