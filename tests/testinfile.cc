@@ -5,6 +5,7 @@
 #include "smoutfile.hh"
 #include "smmemout.hh"
 #include "smstdiosubin.hh"
+#include "smwavset.hh"
 
 #include <cassert>
 #include <climits>
@@ -109,6 +110,42 @@ check_read_position (GenericInP input, size_t length)
       assert (input->get_pos() == length);
       assert (input->get_remaining() == 0);
     }
+}
+
+static void
+check_truncated_audio_blob()
+{
+  vector<unsigned char> audio;
+  {
+    OutFile out (MemOut::open (&audio), "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);
+    out.begin_section ("header");
+    out.write_float ("fundamental_freq", 0);
+  }
+  // Remove the EOF marker and the last byte of the float. An unbounded read
+  // would consume the outer 'E' marker as that byte and set the frequency to 2048.
+  audio.resize (audio.size() - 2);
+  {
+    OutFile out ("testinfile.out", "SpectMorph::WavSet", SPECTMORPH_BINARY_FILE_VERSION);
+    out.begin_section ("wave");
+    out.write_blob ("audio", audio.data(), audio.size());
+    out.end_section();
+  }
+
+  const char *nommap = g_getenv ("SPECTMORPH_NOMMAP");
+  const bool had_nommap = nommap != nullptr;
+  const std::string saved_nommap = nommap ? nommap : "";
+  g_setenv ("SPECTMORPH_NOMMAP", "1", TRUE);
+  WavSet wavset;
+  wavset.load ("testinfile.out");
+  if (had_nommap)
+    g_setenv ("SPECTMORPH_NOMMAP", saved_nommap.c_str(), TRUE);
+  else
+    g_unsetenv ("SPECTMORPH_NOMMAP");
+
+  // WavSet currently ignores the nested load error, but must not obtain a
+  // scalar value from bytes outside the audio blob.
+  assert (wavset.waves.size() == 1 && wavset.waves[0].audio);
+  assert (wavset.waves[0].audio->fundamental_freq == 0);
 }
 
 int
@@ -251,5 +288,6 @@ main (int argc, char **argv)
       in.add_skip_event ("x");
       assert (in.event() == InFile::END_OF_FILE);
     }
+  check_truncated_audio_blob();
   assert (remove ("testinfile.out") == 0);
 }
