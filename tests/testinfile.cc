@@ -50,15 +50,14 @@ open_input (const vector<unsigned char>& data, bool mapped)
   assert (fwrite (data.data(), 1, data.size(), file) == data.size());
   assert (fclose (file) == 0);
   auto input = StdioIn::open ("testinfile.out");
-  size_t remaining;
-  assert (input && input->get_remaining (remaining) && remaining == data.size());
+  assert (input && input->get_remaining() == data.size());
   // Substream queries must respect both the physical file and logical bounds.
   auto sub = StdioSubIn::open ("testinfile.out", 1, data.size() + 100);
-  assert (sub && sub->get_remaining (remaining) && remaining == data.size() - 1);
+  assert (sub && sub->get_remaining() == data.size() - 1);
   sub = StdioSubIn::open ("testinfile.out", 1, 1);
-  assert (sub && sub->get_remaining (remaining) && remaining == 1);
+  assert (sub && sub->get_remaining() == 1);
   assert (sub->get_byte() != EOF);
-  assert (sub->get_remaining (remaining) && remaining == 0);
+  assert (sub->get_remaining() == 0);
   return input;
 }
 
@@ -97,19 +96,18 @@ check_read_position (GenericInP input, size_t length)
   assert (input->get_pos() == 0);
   assert (input->get_byte() != EOF);
   assert (input->get_pos() == 1);
-  size_t remaining;
-  assert (input->get_remaining (remaining) && remaining == length - 1);
+  assert (input->get_remaining() == length - 1);
   char buffer[8];
   assert (length < sizeof (buffer));
   assert (input->read (buffer, sizeof (buffer)) == length - 1);
   assert (input->get_pos() == length);
-  assert (input->get_remaining (remaining) && remaining == 0);
+  assert (input->get_remaining() == 0);
   for (int i = 0; i < 2; i++)
     {
       assert (input->get_byte() == EOF);
       assert (input->read (buffer, 1) == 0);
       assert (input->get_pos() == length);
-      assert (input->get_remaining (remaining) && remaining == 0);
+      assert (input->get_remaining() == 0);
     }
 }
 
@@ -127,16 +125,19 @@ main (int argc, char **argv)
     FILE *file = fopen ("testinfile.out", "wb");
     assert (file && fclose (file) == 0);
     assert (!StdioSubIn::open ("testinfile.out", SIZE_MAX, 0));
+    assert (!StdioSubIn::open ("testinfile.out", 1, 0));
     auto input = StdioIn::open ("testinfile.out");
     auto sub = StdioSubIn::open ("testinfile.out", 0, 0);
-    size_t remaining;
-    assert (input && input->get_remaining (remaining) && remaining == 0);
-    assert (sub && sub->get_remaining (remaining) && remaining == 0);
+    assert (input && input->get_remaining() == 0);
+    assert (sub && sub->get_remaining() == 0);
   }
   {
     vector<unsigned char> data { 'a', 'b', 'c' };
     check_read_position (open_input (data, false), data.size());
     check_read_position (StdioSubIn::open ("testinfile.out", 1, 100), 2);
+    assert (!StdioSubIn::open ("testinfile.out", data.size() + 1, 0));
+    auto at_end = StdioSubIn::open ("testinfile.out", data.size(), 0);
+    assert (at_end && at_end->get_remaining() == 0);
     auto sub = StdioSubIn::open ("testinfile.out", 1, 1);
     char buffer[3];
     assert (sub && sub->read (buffer, 1) == 1);
@@ -155,6 +156,7 @@ main (int argc, char **argv)
     check_skip (StdioSubIn::open ("testinfile.out", 1, 1), 1); // logical end
     vector<unsigned char> empty;
     auto input = MMapIn::open_vector (empty);
+    assert (input->get_remaining() == 0);
     assert (input->read (buffer, 0) == 0);
     assert (input->read (buffer, SIZE_MAX) == 0);
     assert (input->skip (0));
