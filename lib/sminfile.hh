@@ -64,7 +64,7 @@ protected:
   bool        read_raw_string (std::string& str);
   bool        read_raw_int (int &i);
   bool        read_raw_float (float &f);
-  bool        read_raw_block_size (size_t element_size, size_t& count);
+  bool        read_raw_block_size (size_t& count);
   template<class T>
   bool        read_raw_block (std::vector<T>& block);
   bool        read_raw_float_block (std::vector<float>& fb);

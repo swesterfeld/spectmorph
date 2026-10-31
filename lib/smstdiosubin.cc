@@ -69,7 +69,7 @@ StdioSubIn::get_byte()
     }
 }
 
-int
+size_t
 StdioSubIn::read (void *ptr, size_t size)
 {
   if (file_pos < file_len)
@@ -80,7 +80,7 @@ StdioSubIn::read (void *ptr, size_t size)
     }
   else
     {
-      return EOF;
+      return 0;
     }
 }
 

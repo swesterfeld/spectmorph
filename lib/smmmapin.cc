@@ -65,17 +65,16 @@ MMapIn::get_byte()
     return EOF;
 }
 
-int
+size_t
 MMapIn::read (void *ptr, size_t size)
 {
-  if (pos + size <= mapend)
-    {
-      memcpy (ptr, pos, size);
-      pos += size;
-      return size;
-    }
-  else
+  size_t remaining;
+  if (!size || !get_remaining (remaining) || size > remaining)
     return 0;
+
+  memcpy (ptr, pos, size);
+  pos += size;
+  return size;
 }
 
 bool

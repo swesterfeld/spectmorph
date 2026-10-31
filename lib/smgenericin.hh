@@ -38,7 +38,7 @@ public:
    *
    * \returns the number of bytes successfully read or 0; can be less than size on EOF/error
    */
-  virtual int read (void *ptr, size_t size) = 0;
+  virtual size_t read (void *ptr, size_t size) = 0;
   /**
    * Skips a block of input data.
    *

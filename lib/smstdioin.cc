@@ -56,7 +56,7 @@ StdioIn::get_byte()
   return result;
 }
 
-int
+size_t
 StdioIn::read (void *ptr, size_t size)
 {
   const size_t read_bytes = fread (ptr, 1, size, file);

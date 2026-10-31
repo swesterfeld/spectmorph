@@ -26,7 +26,7 @@ public:
   static GenericInP open (const std::string& filename);
 
   int get_byte() override;     // like fgetc
-  int read (void *ptr, size_t size) override;
+  size_t read (void *ptr, size_t size) override;
   bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos() override;

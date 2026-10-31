@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <cstring>
 #include <glib.h>
-#include <limits>
 
 using std::string;
 using std::vector;
@@ -281,15 +280,10 @@ InFile::read_raw_float (float &f)
 }
 
 bool
-InFile::read_raw_block_size (size_t element_size, size_t& count)
+InFile::read_raw_block_size (size_t& count)
 {
   int size;
   if (!read_raw_int (size) || size < 0)
-    return false;
-
-  // GenericIn::read returns int: the byte count must fit as well as the
-  // serialized element count. Check before multiplying or allocating.
-  if (size_t (size) > size_t (std::numeric_limits<int>::max()) / element_size)
     return false;
 
   count = size;
@@ -301,7 +295,7 @@ bool
 InFile::read_raw_block (vector<T>& block)
 {
   size_t count;
-  if (!read_raw_block_size (sizeof (T), count))
+  if (!read_raw_block_size (count))
     return false;
 
   const size_t bytes = count * sizeof (T);
@@ -313,7 +307,7 @@ InFile::read_raw_block (vector<T>& block)
     return false;
 
   block.resize (count);
-  return bytes == 0 || file->read (block.data(), bytes) == int (bytes);
+  return bytes == 0 || file->read (block.data(), bytes) == bytes;
 }
 
 bool
@@ -351,14 +345,14 @@ bool
 InFile::skip_raw_float_block()
 {
   size_t count;
-  return read_raw_block_size (sizeof (float), count) && file->skip (count * sizeof (float));
+  return read_raw_block_size (count) && file->skip (count * sizeof (float));
 }
 
 bool
 InFile::skip_raw_uint16_block()
 {
   size_t count;
-  return read_raw_block_size (sizeof (uint16_t), count) && file->skip (count * sizeof (uint16_t));
+  return read_raw_block_size (count) && file->skip (count * sizeof (uint16_t));
 }
 
 /**
