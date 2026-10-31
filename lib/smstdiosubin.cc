@@ -72,7 +72,8 @@ StdioSubIn::get_byte()
 size_t
 StdioSubIn::read (void *ptr, size_t size)
 {
-  if (file_pos < file_len)
+  size = std::min (size, get_remaining());
+  if (size)
     {
       const size_t read_bytes = fread (ptr, 1, size, file);
       file_pos += read_bytes;
