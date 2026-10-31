@@ -54,6 +54,11 @@ public:
    */
   virtual size_t get_pos() = 0;
   /**
+   * Get the number of remaining input bytes without consuming data.
+   * Returns false if the length cannot be determined.
+   */
+  virtual bool get_remaining (size_t& remaining) = 0;
+  /**
    * Try to access the memory of a memory-based input stream. This will fail for streams
    * that are not memory mapped. This function is useful because it allows writing faster
    * code than with read(); however, an alternative way of reading the data must be

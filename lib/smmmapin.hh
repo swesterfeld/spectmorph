@@ -33,6 +33,7 @@ public:
   bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos() override;
+  bool get_remaining (size_t& remaining) override;
   GenericInP open_subfile (size_t pos, size_t len) override;
 };
 

@@ -81,15 +81,13 @@ MMapIn::read (void *ptr, size_t size)
 bool
 MMapIn::skip (size_t size)
 {
-  if (pos + size <= mapend)
-    {
-      pos += size;
-      return true;
-    }
-  else
-    {
-      return false;
-    }
+  size_t remaining;
+  if (!get_remaining (remaining) || size > remaining)
+    return false;
+
+  if (size)
+    pos += size;
+  return true;
 }
 
 const unsigned char *
@@ -109,4 +107,11 @@ GenericInP
 MMapIn::open_subfile (size_t pos, size_t len)
 {
   return GenericInP (new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */));
+}
+
+bool
+MMapIn::get_remaining (size_t& remaining)
+{
+  remaining = pos == mapend ? 0 : mapend - pos;
+  return true;
 }

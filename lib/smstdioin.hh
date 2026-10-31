@@ -16,8 +16,10 @@ class StdioIn final : public GenericIn
 
   FILE        *file;
   std::string  filename;
+  size_t file_size;
+  size_t file_pos = 0;
 
-  StdioIn (FILE *file, const std::string& filename);
+  StdioIn (FILE *file, const std::string& filename, size_t file_size);
 public:
   ~StdioIn();
 
@@ -28,6 +30,7 @@ public:
   bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos() override;
+  bool get_remaining (size_t& remaining) override;
   GenericInP open_subfile (size_t pos, size_t len) override;
 };
 
