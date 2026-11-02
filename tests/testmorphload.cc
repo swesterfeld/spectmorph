@@ -71,6 +71,29 @@ public:
   }
 };
 
+// Model a subfile-open failure (for example, failure to reopen a stdio file)
+// after one operator has already been loaded successfully.
+class FailingBlobIn : public GenericIn
+{
+  GenericInP input;
+  int blob_opens = 0;
+public:
+  explicit FailingBlobIn (GenericInP input) : input (input) {}
+  int get_byte() override { return input->get_byte(); }
+  size_t read (void *ptr, size_t size) override { return input->read (ptr, size); }
+  bool skip (size_t size) override { return input->skip (size); }
+  size_t get_pos() override { return input->get_pos(); }
+  size_t get_remaining() override { return input->get_remaining(); }
+  const unsigned char *mmap_mem (size_t& remaining) override { return input->mmap_mem (remaining); }
+  GenericInP open_subfile (size_t pos, size_t len) override
+  {
+    if (++blob_opens == 2)
+      return nullptr;
+    return input->open_subfile (pos, len);
+  }
+  int open_count() const { return blob_opens; }
+};
+
 int
 main (int argc, char **argv)
 {
@@ -120,6 +143,29 @@ main (int argc, char **argv)
       assert (plan.load (MMapIn::open_vector (missing_ref)).code() == Error::Code::PARSE_ERROR);
       assert (save_plan (plan) == previous);
     }
+
+  // Use the actual plan writer, including repeated payloads (BLOB_REF), and
+  // check every suffix truncation without constructing invalid field values.
+  MorphPlan written_plan (project);
+  for (const auto& type : types)
+    for (int i = 0; i < 2; i++)
+      written_plan.add_operator (MorphOperator::create (type, &written_plan));
+  const auto written = save_plan (written_plan);
+  const auto before_load = save_plan (plan);
+  for (size_t size = 0; size < written.size(); size++)
+    {
+      vector<unsigned char> truncated (written.begin(), written.begin() + size);
+      assert (plan.load (MMapIn::open_vector (truncated)).code() == Error::Code::PARSE_ERROR);
+      assert (save_plan (plan) == before_load);
+    }
+
+  auto failing_input = std::make_shared<FailingBlobIn> (MMapIn::open_vector (written));
+  assert (plan.load (failing_input).code() == Error::Code::PARSE_ERROR);
+  assert (failing_input->open_count() == 2);
+  assert (save_plan (plan) == before_load);
+
+  assert (!plan.load (MMapIn::open_vector (written)));
+  assert (save_plan (plan) == written);
 
   // Unknown fields retain the existing compatibility behavior.
   vector<unsigned char> unknown;
