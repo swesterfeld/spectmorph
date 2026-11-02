@@ -6,6 +6,8 @@
 #include "smmemout.hh"
 #include "smstdiosubin.hh"
 #include "smwavset.hh"
+#include "smwavsetrepo.hh"
+#include "smmorphsourcemodule.hh"
 
 #include <cassert>
 #include <climits>
@@ -135,17 +137,148 @@ check_truncated_audio_blob()
   const bool had_nommap = nommap != nullptr;
   const std::string saved_nommap = nommap ? nommap : "";
   g_setenv ("SPECTMORPH_NOMMAP", "1", TRUE);
+  {
+    InFile in ("testinfile.out");
+    assert (in.event() == InFile::BEGIN_SECTION);
+    in.next_event();
+    assert (in.event() == InFile::BLOB);
+    Audio partial;
+    assert (partial.load (in.open_blob()).code() == Error::Code::PARSE_ERROR);
+    assert (partial.fundamental_freq == 0); // no bytes read beyond the blob
+  }
   WavSet wavset;
-  wavset.load ("testinfile.out");
+  assert (wavset.load ("testinfile.out").code() == Error::Code::PARSE_ERROR);
   if (had_nommap)
     g_setenv ("SPECTMORPH_NOMMAP", saved_nommap.c_str(), TRUE);
   else
     g_unsetenv ("SPECTMORPH_NOMMAP");
 
-  // WavSet currently ignores the nested load error, but must not obtain a
-  // scalar value from bytes outside the audio blob.
-  assert (wavset.waves.size() == 1 && wavset.waves[0].audio);
-  assert (wavset.waves[0].audio->fundamental_freq == 0);
+  assert (wavset.waves.empty());
+}
+
+static void
+write_bytes (const char *filename, const vector<unsigned char>& data, size_t size)
+{
+  FILE *file = fopen (filename, "wb");
+  assert (file);
+  assert (fwrite (data.data(), 1, size, file) == size);
+  assert (fclose (file) == 0);
+}
+
+static void
+check_wavset_load()
+{
+  const char *filename = "testinfile-wavset.out";
+  const char *audio_filename = "testinfile-audio.out";
+  WavSet original;
+  original.name = "Load test";
+  original.short_name = "LT";
+  original.waves.resize (2);
+  auto audio = new Audio();
+  audio->mix_freq = 48000;
+  audio->fundamental_freq = 440;
+  audio->frame_size_ms = 40;
+  audio->frame_step_ms = 10;
+  audio->sample_count = 960;
+  audio->contents.resize (2);
+  for (auto& frame : audio->contents)
+    {
+      frame.freqs = { sm_freq2ifreq (1) };
+      frame.mags = { sm_factor2idb (0.5) };
+      frame.phases = { 0 };
+      frame.noise.resize (Audio::N_NOISE_BANDS);
+      frame.debug_samples = { 0, 0.5, 0 };
+    }
+  // The second wave is saved as a BLOB_REF and shares ownership on load.
+  for (auto& wave : original.waves)
+    {
+      wave.audio = audio;
+      wave.midi_note = 69;
+    }
+  assert (!original.save (filename));
+  gchar *bytes = nullptr;
+  gsize length = 0;
+  assert (g_file_get_contents (filename, &bytes, &length, nullptr));
+  vector<unsigned char> saved (bytes, bytes + length);
+  g_free (bytes);
+  vector<unsigned char> saved_audio;
+  assert (!audio->save (MemOut::open (&saved_audio)));
+
+  const char *nommap = g_getenv ("SPECTMORPH_NOMMAP");
+  const bool had_nommap = nommap != nullptr;
+  const std::string saved_nommap = nommap ? nommap : "";
+  for (bool mapped : { false, true })
+    {
+      if (mapped)
+        g_unsetenv ("SPECTMORPH_NOMMAP");
+      else
+        g_setenv ("SPECTMORPH_NOMMAP", "1", TRUE);
+      for (auto options : { AUDIO_LOAD_DEBUG, AUDIO_SKIP_DEBUG })
+        {
+          write_bytes (filename, saved, saved.size());
+          WavSet loaded;
+          assert (!loaded.load (filename, options));
+          assert (loaded.waves.size() == 2);
+          auto good_audio = loaded.waves[0].audio;
+          assert (good_audio && loaded.waves[1].audio == good_audio);
+          assert (good_audio->contents.size() == 2);
+          assert (good_audio->contents[0].debug_samples.empty() == (options == AUDIO_SKIP_DEBUG));
+
+          // Every truncation of the real writer's output must fail, including
+          // after complete waves and inside a reference to shared audio.
+          for (size_t size = 0; size < saved.size(); size++)
+            {
+              write_bytes (filename, saved, size);
+              assert (loaded.load (filename, options));
+              assert (loaded.name == original.name && loaded.short_name == original.short_name);
+              assert (loaded.waves.size() == 2 && loaded.waves[0].audio == good_audio);
+              assert (loaded.waves[1].audio == good_audio);
+            }
+
+          // WavSet::save can embed an already-truncated SpectMorph audio file
+          // in an otherwise complete archive. Its nested error must propagate.
+          WavSet external;
+          external.waves.resize (1);
+          external.waves[0].path = audio_filename;
+          for (size_t size = 0; size < saved_audio.size(); size++)
+            {
+              write_bytes (audio_filename, saved_audio, size);
+              assert (!external.save (filename, true));
+              WavSet failed;
+              assert (failed.load (filename, options));
+              assert (failed.waves.empty());
+            }
+        }
+
+      WavSetRepo repo;
+      // The current file contains a truncated embedded model.
+      assert (!repo.get (filename));
+      SimpleWavSetSource source;
+      source.set_wav_set (repo.get (filename));
+      source.retrigger (0, 440, 100);
+      assert (!source.audio());
+      assert (remove (filename) == 0);
+      assert (!repo.get (filename));
+      WavSetRepo missing_repo;
+      assert (!missing_repo.get (filename));
+      write_bytes (filename, saved, saved.size());
+      // Repairing the file must not retry cached parse or open failures.
+      assert (!repo.get (filename));
+      assert (!missing_repo.get (filename));
+      WavSetRepo fresh_repo;
+      auto cached = fresh_repo.get (filename);
+      assert (cached && cached->waves.size() == 2);
+      assert (fresh_repo.get (filename) == cached);
+      source.set_wav_set (cached);
+      source.retrigger (0, 440, 100);
+      assert (source.audio() == cached->waves[0].audio);
+    }
+  if (had_nommap)
+    g_setenv ("SPECTMORPH_NOMMAP", saved_nommap.c_str(), TRUE);
+  else
+    g_unsetenv ("SPECTMORPH_NOMMAP");
+  assert (remove (filename) == 0);
+  assert (remove (audio_filename) == 0);
 }
 
 int
@@ -289,5 +422,6 @@ main (int argc, char **argv)
       assert (in.event() == InFile::END_OF_FILE);
     }
   check_truncated_audio_blob();
+  check_wavset_load();
   assert (remove ("testinfile.out") == 0);
 }

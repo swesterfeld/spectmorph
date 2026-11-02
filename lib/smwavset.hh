@@ -27,6 +27,7 @@ public:
 
 class WavSet
 {
+  Error load_internal (const std::string& filename, AudioLoadOptions load_options);
 public:
   ~WavSet();
 

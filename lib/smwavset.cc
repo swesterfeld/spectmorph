@@ -85,8 +85,20 @@ WavSet::save (const string& filename, bool embed_models)
 Error
 WavSet::load (const string& filename, AudioLoadOptions load_options)
 {
-  clear();        // delete old contents (if any)
+  WavSet loaded;
+  Error error = loaded.load_internal (filename, load_options);
+  if (error)
+    return error;
 
+  name.swap (loaded.name);
+  short_name.swap (loaded.short_name);
+  waves.swap (loaded.waves);
+  return Error::Code::NONE;
+}
+
+Error
+WavSet::load_internal (const string& filename, AudioLoadOptions load_options)
+{
   map<string, Audio *> blob_map;
 
   WavSetWave *wave = NULL;
@@ -113,7 +125,10 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
           if (section == "wave")
             {
               assert (wave == NULL);
-              wave = new WavSetWave();
+              // Own the wave immediately, so a read error also cleans up an
+              // unfinished wave and its audio (including shared blob data).
+              waves.emplace_back();
+              wave = &waves.back();
             }
         }
       else if (ifile.event() == InFile::END_SECTION)
@@ -122,8 +137,6 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
             {
               assert (wave);
 
-              waves.push_back (*wave);
-              delete wave;
               wave = NULL;
             }
 
@@ -200,7 +213,9 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
                   GenericInP blob_in = ifile.open_blob();
 
                   wave->audio = new Audio();
-                  wave->audio->load (blob_in, load_options);
+                  Error error = wave->audio->load (blob_in, load_options);
+                  if (error)
+                    return error;
 
                   blob_map[ifile.event_blob_sum()] = wave->audio;
                 }
