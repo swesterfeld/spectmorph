@@ -238,6 +238,11 @@ MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
                     }
 
                   GenericInP blob_in = ifile.open_blob();
+                  if (!blob_in)
+                    {
+                      error = Error::Code::PARSE_ERROR;
+                      break;
+                    }
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
                   int ch;
                   while ((ch = blob_in->get_byte()) >= 0)
