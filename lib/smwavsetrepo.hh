@@ -19,6 +19,7 @@ class WavSetRepo {
 public:
   ~WavSetRepo();
 
+  // Returns nullptr on load failure; successes and failures are cached for the repository's lifetime.
   WavSet *get (const std::string& filename);
 
   static WavSetRepo *

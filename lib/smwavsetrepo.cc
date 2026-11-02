@@ -3,6 +3,8 @@
 #include "smwavsetrepo.hh"
 #include "smmain.hh"
 
+#include <memory>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -12,13 +14,18 @@ WavSetRepo::get (const string& filename)
 {
   std::lock_guard<std::mutex> lock (mutex);
 
-  WavSet*& wav_set = wav_set_map[filename];
-  if (!wav_set)
-    {
-      wav_set = new WavSet();
-      wav_set->load (filename, AUDIO_SKIP_DEBUG);
-    }
-  return wav_set;
+  auto cached = wav_set_map.find (filename);
+  if (cached != wav_set_map.end())
+    return cached->second;
+
+  auto wav_set = std::make_unique<WavSet>();
+  if (wav_set->load (filename, AUDIO_SKIP_DEBUG))
+    wav_set.reset();
+
+  auto result = wav_set.get();
+  wav_set_map.emplace (filename, result);
+  wav_set.release();
+  return result;
 }
 
 WavSetRepo::~WavSetRepo()
