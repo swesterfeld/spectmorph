@@ -24,7 +24,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity testinstbuild testautovol testwavdata testzip testuindexperf \
 	testlfo testsmdirs testladdervcf testpandaperf testnotifyperf testpropperf testroundperf \
-	testpsola testcurve
+	testpsola testcurve testyin
 
 REFS = ref/1-instrument.ref ref/2-instruments-linear-gui.ref ref/2-instruments-linear-lfo.ref \
        ref/2-instruments-unison.ref ref/2x2-instruments-grid-gui.ref ref/aurora.ref ref/cheese-cake-bass.ref \
@@ -188,6 +188,9 @@ testceventlock_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 testpitchdetect_SOURCES = testpitchdetect.cc
 testpitchdetect_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
+
+testyin_SOURCES = testyin.cc
+testyin_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm test-porta
