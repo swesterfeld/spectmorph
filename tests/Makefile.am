@@ -10,13 +10,13 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
         sinsignal.py smresvalue.sh tune-test.sh test-norm.sh test-porta.sh hilbert.py \
-	post-install-test.sh
+        post-install-test.sh plotyin.sh plotyin.gp
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS_ENVIRONMENT = SPECTMORPH_MAKE_CHECK=1
 
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq testbesseli0 testsse testblockmath testceventlock testpitchdetect testmorphload testinfile
+        testidb testifreq testbesseli0 testsse testblockmath testceventlock testpitchdetect testmorphload testinfile testyinapi
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testparamupdate testloopindex testoutfileperf \
@@ -191,6 +191,12 @@ testpitchdetect_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 testyin_SOURCES = testyin.cc
 testyin_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
+# The probabilistic decoder uses infinity and validates non-finite input.
+testyin_CXXFLAGS = $(AM_CXXFLAGS) -fno-fast-math
+
+testyinapi_SOURCES = testyinapi.cc
+testyinapi_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
+testyinapi_CXXFLAGS = $(AM_CXXFLAGS) -fno-fast-math
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm test-porta
